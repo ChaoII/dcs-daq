@@ -7,9 +7,17 @@ class CrossItem : public QGraphicsItem {
 public:
     CrossItem();
 
+    void draw_shape(const QPoint &point, int w, int h);
+
 protected:
     QRectF boundingRect() const;
 
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = nullptr);
+
+
+private:
+    QPoint point_;
+    int view_port_width_;
+    int view_port_height_;
 };
 

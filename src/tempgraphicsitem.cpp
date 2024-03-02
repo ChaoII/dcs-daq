@@ -12,9 +12,7 @@ TempGraphicsItem::TempGraphicsItem(const QSizeF &size):
 
 TempGraphicsItem::~TempGraphicsItem()
 {
-//    SAFE_DELETE(m_pTempPainter);
-//    SAFE_DELETE(m_pTempCanvas);
-//    qDebug() << "--->>>Lynn<<<---" << __FUNCTION__;
+
 }
 
 void TempGraphicsItem::clear()
@@ -43,9 +41,4 @@ void TempGraphicsItem::draw_shape(QPointF p1, QPointF p2)
     update();
 }
 
-void TempGraphicsItem::set_size(const QSize &size)
-{
-//    size_ = size;
-//    *temp_canvas = temp_canvas->scaled(size);
-}
 

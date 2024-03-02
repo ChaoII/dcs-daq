@@ -13,8 +13,6 @@ public:
 
     void draw_shape(QPointF p1, QPointF p2);
 
-    void set_size(const QSize &size);
-
 protected:
 
     QRectF boundingRect() const override;
