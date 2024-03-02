@@ -14,11 +14,7 @@
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout">
-    <item>
-     <widget class="AGraphicsView" name="graphicsView"/>
-    </item>
-   </layout>
+   <layout class="QVBoxLayout" name="verticalLayout"/>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
@@ -26,7 +22,7 @@
      <x>0</x>
      <y>0</y>
      <width>1007</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
   </widget>
@@ -52,7 +48,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="qrc.qrc">
+    <iconset>
      <normaloff>:/images/rectangle.png</normaloff>:/images/rectangle.png</iconset>
    </property>
    <property name="text">
@@ -67,7 +63,7 @@
   </action>
   <action name="openfileAction">
    <property name="icon">
-    <iconset resource="qrc.qrc">
+    <iconset>
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
@@ -81,15 +77,6 @@
    </property>
   </action>
  </widget>
- <customwidgets>
-  <customwidget>
-   <class>AGraphicsView</class>
-   <extends>QGraphicsView</extends>
-   <header location="global">agraphicsview.h</header>
-  </customwidget>
- </customwidgets>
- <resources>
-  <include location="qrc.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

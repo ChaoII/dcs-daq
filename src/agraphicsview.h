@@ -1,4 +1,5 @@
 
+#pragma once
 
 #include <QWidget>
 #include <QGraphicsView>
@@ -40,13 +41,16 @@ signals:
 
     void send_position_signal(const QPoint &, const QPoint &);
 
+    void send_draw_final_signal(const QGraphicsRectItem *item);
 
 private:
+    int index_id = 0;
     Ui::AGraphicsView *ui;
     QPoint last_point_;
     QPoint current_point_;
     TempGraphicsItem *temp_canvas_ = nullptr;
     bool draw_rect_checked_ = false;
     CrossItem *cross_item_ = nullptr;
+    double scale_factor = 1.0;
 };
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>285</width>
-    <height>509</height>
+    <width>430</width>
+    <height>626</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -15,7 +15,14 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <widget class="QListWidget" name="listWidget"/>
+    <widget class="QListWidget" name="lw_rectCoordinate"/>
+   </item>
+   <item>
+    <widget class="QLabel" name="lb_rectTextResult">
+     <property name="text">
+      <string/>
+     </property>
+    </widget>
    </item>
   </layout>
  </widget>

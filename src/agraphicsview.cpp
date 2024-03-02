@@ -2,6 +2,7 @@
 #include "ui_agraphicsview.h"
 #include <QPixmap>
 #include <QMessageBox>
+#include <QUuid>
 
 AGraphicsView::AGraphicsView(QWidget *parent) :
         QGraphicsView(parent),
@@ -9,9 +10,11 @@ AGraphicsView::AGraphicsView(QWidget *parent) :
     ui->setupUi(this);
     setScene(new QGraphicsScene(this));
     setMouseTracking(true);
-    temp_canvas_ = new TempGraphicsItem(this->size());
+    temp_canvas_ = new TempGraphicsItem(QSize(3000, 3000));
+    temp_canvas_->setZValue(1);
     this->scene()->addItem(temp_canvas_);
     cross_item_ = new CrossItem();
+    // 保证十字标线在最上方
     cross_item_->setZValue(1);
     this->scene()->addItem(cross_item_);
 }
@@ -33,8 +36,6 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
     }
     cross_item_->draw_shape(mapToScene(event->pos()).toPoint(), this->size().width(), this->size().height());
     emit send_position_signal(current_point_, mapToScene(current_point_).toPoint());
-    // 必须手动刷新，不然不会有十字准星
-    this->scene()->update();
     QGraphicsView::mouseMoveEvent(event);
 }
 
@@ -42,17 +43,24 @@ void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
     if (draw_rect_checked_) {
         temp_canvas_->clear();
         auto *item1 = new QGraphicsRectItem();
+        // 0 代表 id
+        item1->setData(0, QUuid::createUuid().toString());
+        // 1 代表 name
+        item1->setData(1, "");
+        item1->setPen(QPen(Qt::red));
         item1->setRect(QRectF(mapToScene(last_point_), mapToScene(event->pos())));
         this->scene()->addItem(item1);
+        emit send_draw_final_signal(item1);
     }
     QGraphicsView::mouseReleaseEvent(event);
 }
 
 void AGraphicsView::wheelEvent(QWheelEvent *e) {
+//    scale_factor = this->matrix().m11();
     if (e->modifiers() & Qt::ControlModifier) {
-        if (e->angleDelta().y() > 0)
+        if (e->angleDelta().y() > 0) {
             this->scale(1.2, 1.2);
-        else
+        } else
             this->scale(0.8, 0.8);
         e->accept();
     } else {
@@ -61,21 +69,14 @@ void AGraphicsView::wheelEvent(QWheelEvent *e) {
 }
 
 void AGraphicsView::paintEvent(QPaintEvent *event) {
-//    QPainter painter(this->viewport());
-//    QPen pen;
-//    pen.setWidth(1);
-//    pen.setColor(Qt::red);
-//    painter.setPen(pen);
-//    //绘制横向线
-//    painter.drawLine(0, current_point_.y(), width(), current_point_.y());
-//    //绘制纵向线
-//    painter.drawLine(current_point_.x(), 0, current_point_.x(), height());
     QGraphicsView::paintEvent(event);
 }
+
 
 void AGraphicsView::add_image_item(const QPixmap &pix) {
 //    this->scene()->clear();
 //    this->scene()->clearSelection();
+    index_id = 0;
     auto *background_img_item = new QGraphicsPixmapItem(pix);
     this->scene()->setSceneRect(QRectF(QPointF(0, 0), pix.size()));
     background_img_item->setPos(0, 0);
