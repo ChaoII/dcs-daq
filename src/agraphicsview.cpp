@@ -33,8 +33,8 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
         if (event->buttons() & Qt::LeftButton) {
             temp_canvas_->draw_shape(mapToScene(last_point_), mapToScene(current_point_));
         }
+        cross_item_->draw_shape(mapToScene(event->pos()).toPoint(), this->size().width(), this->size().height());
     }
-    cross_item_->draw_shape(mapToScene(event->pos()).toPoint(), this->size().width(), this->size().height());
     emit send_position_signal(current_point_, mapToScene(current_point_).toPoint());
     QGraphicsView::mouseMoveEvent(event);
 }
@@ -48,6 +48,7 @@ void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
         // 1 代表 name
         item1->setData(1, "");
         item1->setPen(QPen(Qt::red));
+        item1->setBrush(QBrush(QColor(255,0,0,30)));
         item1->setRect(QRectF(mapToScene(last_point_), mapToScene(event->pos())));
         this->scene()->addItem(item1);
         emit send_draw_final_signal(item1);
@@ -85,6 +86,12 @@ void AGraphicsView::add_image_item(const QPixmap &pix) {
 
 void AGraphicsView::set_draw_shape_status(bool checked_status) {
     draw_rect_checked_ = checked_status;
+    if(!draw_rect_checked_ and cross_item_){
+        scene()->removeItem(cross_item_);
+    }
+    if(draw_rect_checked_ and cross_item_){
+        scene()->addItem(cross_item_);
+    }
 }
 
 AGraphicsView::~AGraphicsView() {
