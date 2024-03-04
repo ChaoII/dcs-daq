@@ -11,7 +11,7 @@ public:
 
     void clear();
 
-    void draw_shape(QPointF p1, QPointF p2);
+    void draw_shape(const QPointF &p1, const QPointF &p2, const QColor &color = Qt::red, int line_width = 1);
 
 protected:
 

@@ -38,6 +38,9 @@ public:
 
     void set_scale_range(double minimum, double maximum);
 
+private:
+    void center_scene();
+
 protected:
 
     void mousePressEvent(QMouseEvent *event) override;
@@ -54,6 +57,8 @@ protected:
 
     void paintEvent(QPaintEvent *event) override;
 
+    void showEvent(QShowEvent *event) override;
+
     void drawBackground(QPainter *painter, const QRectF &r) override;
 
 signals:
@@ -63,13 +68,22 @@ signals:
     void send_draw_final_signal(const QGraphicsRectItem *item);
 
 private:
-    int index_id = 0;
+    QColor box_color = QColor(255, 0, 0, 30);
+
     Ui::AGraphicsView *ui;
+
     QPoint last_point_;
+
     QPoint current_point_;
+
     TempGraphicsItem *temp_canvas_ = nullptr;
+
     bool draw_rect_checked_ = false;
+
     CrossItem *cross_item_ = nullptr;
-    ScaleRange scale_range_{0.3, 2};
+
+    ScaleRange scale_range_ = {};
+
+    int default_scene_size_ = 0;
 };
 

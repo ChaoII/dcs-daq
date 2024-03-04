@@ -1,4 +1,5 @@
 #include "crossitem.h"
+#include "config.h"
 
 CrossItem::CrossItem() {
 
@@ -6,7 +7,7 @@ CrossItem::CrossItem() {
 
 QRectF CrossItem::boundingRect() const {
 
-    return QRect(0, 0, view_port_width_, view_port_height_);
+    return QRect(0, 0, Config::default_scene_size, Config::default_scene_size);
 }
 
 void CrossItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {
@@ -15,14 +16,14 @@ void CrossItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     pen.setColor(Qt::red);
     painter->setPen(pen);
     //绘制横向线
-    painter->drawLine(-3000, point_.y(), view_port_width_, point_.y());
+    painter->drawLine(left_top_point_.x(), cursor_point_.y(), right_bottom_point_.x(), cursor_point_.y());
     //绘制纵向线
-    painter->drawLine(point_.x(), -3000, point_.x(), view_port_height_);
+    painter->drawLine(cursor_point_.x(), left_top_point_.y(), cursor_point_.x(), right_bottom_point_.y());
 }
 
-void CrossItem::draw_shape(const QPoint &point, int w, int h) {
-    point_ = point;
-    view_port_width_ = w;
-    view_port_height_ = h;
+void CrossItem::draw_shape(const QPoint &cursor_point, const QPoint &left_top_point, const QPoint &right_bottom_point) {
+    cursor_point_ = cursor_point;
+    left_top_point_ = left_top_point;
+    right_bottom_point_ = right_bottom_point;
     update();
 }
