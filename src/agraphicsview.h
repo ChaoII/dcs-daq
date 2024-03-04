@@ -16,6 +16,11 @@ namespace Ui {
 class AGraphicsView : public QGraphicsView {
 Q_OBJECT
 
+    struct ScaleRange {
+        double minimum = 0;
+        double maximum = 0;
+    };
+
 public:
     explicit AGraphicsView(QWidget *parent = nullptr);
 
@@ -25,6 +30,14 @@ public:
 
     void set_draw_shape_status(bool checked_status);
 
+    void scale_down();
+
+    void scale_up();
+
+    void setup_scale(double scale);
+
+    void set_scale_range(double minimum, double maximum);
+
 protected:
 
     void mousePressEvent(QMouseEvent *event) override;
@@ -33,9 +46,15 @@ protected:
 
     void mouseReleaseEvent(QMouseEvent *event) override;
 
+    void keyPressEvent(QKeyEvent *event) override;
+
+    void keyReleaseEvent(QKeyEvent *event) override;
+
     void wheelEvent(QWheelEvent *event) override;
 
     void paintEvent(QPaintEvent *event) override;
+
+    void drawBackground(QPainter *painter, const QRectF &r) override;
 
 signals:
 
@@ -51,6 +70,6 @@ private:
     TempGraphicsItem *temp_canvas_ = nullptr;
     bool draw_rect_checked_ = false;
     CrossItem *cross_item_ = nullptr;
-    double scale_factor = 1.0;
+    ScaleRange scale_range_{0.3, 2};
 };
 

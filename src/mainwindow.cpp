@@ -10,6 +10,7 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+
     ui->setupUi(this);
     graphicsView = new AGraphicsView();
     connect(graphicsView,&AGraphicsView::send_position_signal,this,&MainWindow::update_position_label);
@@ -20,6 +21,12 @@ MainWindow::MainWindow(QWidget *parent) :
     status_scene_cord->setMinimumWidth(150);
     ui->statusBar->addWidget(status_view_cord);
     ui->statusBar->addWidget(status_scene_cord);
+
+    // 其它toolButton 的icon size 可以给出推荐尺寸
+    // int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
+    // QSize icon_size(size, size);
+    // ui->toolBar->setIconSize(icon_size);
+
     auto *h_spliter = new QSplitter();
     h_spliter->setOrientation(Qt::Horizontal);
     this->centralWidget()->layout()->addWidget(h_spliter);
