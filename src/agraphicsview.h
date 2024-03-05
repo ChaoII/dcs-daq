@@ -28,7 +28,9 @@ public:
 
     void add_image_item(const QPixmap &pix);
 
-    void set_draw_shape_status(bool checked_status);
+    void set_draw_shape_status();
+
+    void set_select_status();
 
     void scale_down();
 
@@ -37,6 +39,8 @@ public:
     void setup_scale(double scale);
 
     void set_scale_range(double minimum, double maximum);
+
+    void remove_item_from_scene(QGraphicsItem *);
 
 private:
     void center_scene();
@@ -65,7 +69,12 @@ signals:
 
     void send_position_signal(const QPoint &, const QPoint &);
 
-    void send_draw_final_signal(const QGraphicsRectItem *item);
+    void send_draw_final_signal(QGraphicsItem *);
+
+    void item_selected_changed_signal();
+
+private slots:
+
 
 private:
     QColor box_color = QColor(255, 0, 0, 30);

@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1007</width>
-    <height>483</height>
+    <height>733</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,7 +38,10 @@
     <bool>false</bool>
    </attribute>
    <addaction name="openfileAction"/>
+   <addaction name="separator"/>
+   <addaction name="selectTool"/>
    <addaction name="rectangleTool"/>
+   <addaction name="clearTool"/>
   </widget>
   <action name="rectangleTool">
    <property name="checkable">
@@ -48,7 +51,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset>
+    <iconset resource="../qrc.qrc">
      <normaloff>:/images/rectangle.png</normaloff>:/images/rectangle.png</iconset>
    </property>
    <property name="text">
@@ -63,7 +66,7 @@
   </action>
   <action name="openfileAction">
    <property name="icon">
-    <iconset>
+    <iconset resource="../qrc.qrc">
      <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
    </property>
    <property name="text">
@@ -76,7 +79,39 @@
     <string>Ctrl+O</string>
    </property>
   </action>
+  <action name="selectTool">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/select.png</normaloff>:/images/select.png</iconset>
+   </property>
+   <property name="text">
+    <string>选择</string>
+   </property>
+   <property name="toolTip">
+    <string>选择</string>
+   </property>
+   <property name="shortcut">
+    <string>S</string>
+   </property>
+  </action>
+  <action name="clearTool">
+   <property name="icon">
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/clear.png</normaloff>:/images/clear.png</iconset>
+   </property>
+   <property name="text">
+    <string>清除</string>
+   </property>
+   <property name="toolTip">
+    <string>清除所有图元</string>
+   </property>
+  </action>
  </widget>
- <resources/>
+ <resources>
+  <include location="../qrc.qrc"/>
+ </resources>
  <connections/>
 </ui>

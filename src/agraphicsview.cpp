@@ -33,12 +33,16 @@ AGraphicsView::AGraphicsView(QWidget *parent) :
     this->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
+
+    connect(this->scene(), &QGraphicsScene::selectionChanged, this,
+            [&]() {
+                emit item_selected_changed_signal();
+            });
 }
 
 void AGraphicsView::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         last_point_ = event->pos();
-        qDebug() << "pressed: " << last_point_;
     }
     QGraphicsView::mousePressEvent(event);
 }
@@ -49,9 +53,11 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
         if (event->buttons() & Qt::LeftButton) {
             temp_canvas_->draw_shape(this->mapToScene(last_point_), this->mapToScene(current_point_));
         }
-        cross_item_->draw_shape(this->mapToScene(current_point_).toPoint(),
-                                this->mapToScene(QPoint(0, 0)).toPoint(),
-                                this->mapToScene(QPoint(this->width(), this->height())).toPoint());
+        if (cross_item_) {
+            cross_item_->draw_shape(this->mapToScene(current_point_).toPoint(),
+                                    this->mapToScene(QPoint(0, 0)).toPoint(),
+                                    this->mapToScene(QPoint(this->width(), this->height())).toPoint());
+        }
     }
     emit send_position_signal(current_point_, this->mapToScene(current_point_).toPoint());
     QGraphicsView::mouseMoveEvent(event);
@@ -62,12 +68,16 @@ void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
         temp_canvas_->clear();
         auto *item1 = new QGraphicsRectItem();
         // 0 代表 id
-        item1->setData(0, QUuid::createUuid().toString());
+        auto id = QUuid::createUuid().toString();
+        item1->setData(0, id);
         // 1 代表 name
         item1->setData(1, "");
         item1->setPen(QPen(Qt::red));
         item1->setBrush(box_color);
-        item1->setRect(QRectF(this->mapToScene(last_point_), this->mapToScene(event->pos())));
+        item1->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
+        item1->setRect(QRectF(this->mapToScene(last_point_),
+                              this->mapToScene(event->pos())));
+        item1->setCacheMode(QGraphicsItem::NoCache);
         this->scene()->addItem(item1);
         emit send_draw_final_signal(item1);
     }
@@ -92,10 +102,9 @@ void AGraphicsView::paintEvent(QPaintEvent *event) {
     QGraphicsView::paintEvent(event);
 }
 
-
 void AGraphicsView::add_image_item(const QPixmap &pix) {
-    this->scene()->clear();
-    this->scene()->clearSelection();
+//    this->scene()->clear();
+//    this->scene()->clearSelection();
     auto *background_img_item = new QGraphicsPixmapItem(pix);
     this->setSceneRect(pix.rect());
     background_img_item->setPos(0, 0);
@@ -103,13 +112,17 @@ void AGraphicsView::add_image_item(const QPixmap &pix) {
     centerOn(this->sceneRect().center());
 }
 
-void AGraphicsView::set_draw_shape_status(bool checked_status) {
-    draw_rect_checked_ = checked_status;
-    if (!draw_rect_checked_ and cross_item_) {
-        scene()->removeItem(cross_item_);
+void AGraphicsView::set_draw_shape_status() {
+    draw_rect_checked_ = true;
+    if (cross_item_ && !scene()->items().contains(cross_item_)) {
+        this->scene()->addItem(cross_item_);
     }
-    if (draw_rect_checked_ and cross_item_) {
-        scene()->addItem(cross_item_);
+}
+
+void AGraphicsView::set_select_status() {
+    draw_rect_checked_ = false;
+    if (cross_item_ && scene()->items().contains(cross_item_)) {
+        this->scene()->removeItem(cross_item_);
     }
 }
 
@@ -235,3 +248,9 @@ void AGraphicsView::showEvent(QShowEvent *event) {
     center_scene();
     QGraphicsView::showEvent(event);
 }
+
+void AGraphicsView::remove_item_from_scene(QGraphicsItem *item) {
+    this->scene()->removeItem(item);
+}
+
+

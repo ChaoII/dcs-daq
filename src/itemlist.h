@@ -20,6 +20,12 @@ public:
 
     QLabel* get_label();
 
+private slots:
+
+//    void on_lw_rectCoordinate_itemClicked(QListWidgetItem *item);
+
+//    void on_lw_rectCoordinate_currentRowChanged(int currentRow);
+
 private:
     Ui::ItemList *ui;
 };
