@@ -21,6 +21,8 @@ protected:
 
     void keyPressEvent(QKeyEvent *event) override;
 
+    bool eventFilter(QObject *watched, QEvent *e) override;
+
 public slots:
 
     void update_position_label(const QPoint &, const QPoint &);

@@ -26,6 +26,7 @@ private slots:
 
 //    void on_lw_rectCoordinate_currentRowChanged(int currentRow);
 
+
 private:
     Ui::ItemList *ui;
 };

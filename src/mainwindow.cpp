@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
     graphicsView_ = new AGraphicsView();
+    graphicsView_->installEventFilter(this);
     status_view_cord_ = new QLabel("View 坐标：");
     status_view_cord_->setMinimumWidth(150);
     status_scene_cord_ = new QLabel("Scene 坐标：");
@@ -78,18 +79,22 @@ void MainWindow::on_draw_rect_finished(QGraphicsItem *item) {
     auto list_item = new QListWidgetItem(id);
     item_list_->get_list_widget()->addItem(list_item);
     items_map_.insert(list_item, item);
+    qDebug() << "--------" << items_map_.size();
 }
 
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Delete) {
-        QMap<QListWidgetItem *, QGraphicsItem *>::iterator it;
-        for (it = items_map_.begin(); it != items_map_.end(); it++) {
+        for (auto it = items_map_.begin(); it != items_map_.end();) {
             if (it.value()->isSelected()) {
-                it.key()->setSelected(true);
-                items_map_.remove(it.key());
-                delete it.key();
+                // notice 删除当前元素的顺序非常重要
                 delete it.value();
+                delete it.key();
+                // 删除并且迭代器后移
+                it = items_map_.erase(it);
+            } else {
+                // 如果不满足条件，移动到下一个元素
+                ++it;
             }
         }
     }
@@ -119,6 +124,11 @@ void MainWindow::on_clearTool_triggered() {
     }
     items_map_.clear();
     item_list_->get_list_widget()->clear();
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *e) {
+
+    return QObject::eventFilter(watched, e);
 }
 
 
