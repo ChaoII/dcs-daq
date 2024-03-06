@@ -17,9 +17,11 @@ AGraphicsView::AGraphicsView(QWidget *parent) :
     this->setMouseTracking(true);
     temp_canvas_ = new TempGraphicsItem(QSize(default_scene_size_, default_scene_size_));
     this->scene()->addItem(temp_canvas_);
+    temp_canvas_->setData(0, "temp canvas");
 
     // 保证十字标线在最上方
     cross_item_ = new CrossItem();
+    cross_item_->setData(0, "cross item");
     cross_item_->setZValue(1);
     this->scene()->addItem(cross_item_);
 
@@ -43,13 +45,26 @@ AGraphicsView::AGraphicsView(QWidget *parent) :
 void AGraphicsView::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         last_point_ = event->pos();
+        auto s = this->scene()->items(this->mapToScene(current_point_));
+        qDebug() << "===================";
+        for (auto c: s) {
+            qDebug() << c->data(0).toString();
+        }
+        qDebug() << "===================";
+        // temp item // cross item // maybe image item
+        if (s.size() > items_threshold_) {
+            hide_cross_line();
+        } else {
+            show_cross_line();
+        }
+        qDebug() << "size:" << s.size() << "threshold:" << items_threshold_;
     }
     QGraphicsView::mousePressEvent(event);
 }
 
 void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
     current_point_ = event->pos();
-    if (draw_rect_checked_) {
+    if (draw_rect_checked_ && can_draw_) {
         if (event->buttons() & Qt::LeftButton) {
             temp_canvas_->draw_shape(this->mapToScene(last_point_), this->mapToScene(current_point_));
         }
@@ -64,7 +79,7 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
 }
 
 void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
-    if (draw_rect_checked_ && event->button() == Qt::LeftButton) {
+    if (event->button() == Qt::LeftButton && draw_rect_checked_ && can_draw_) {
         temp_canvas_->clear();
         auto *item1 = new QGraphicsRectItem();
         // 0 代表 id
@@ -78,6 +93,7 @@ void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
         item1->setRect(QRectF(this->mapToScene(last_point_),
                               this->mapToScene(event->pos())));
         item1->setCacheMode(QGraphicsItem::NoCache);
+
         this->scene()->addItem(item1);
         emit send_draw_final_signal(item1);
     }
@@ -103,26 +119,45 @@ void AGraphicsView::paintEvent(QPaintEvent *event) {
 }
 
 void AGraphicsView::add_image_item(const QPixmap &pix) {
-//    this->scene()->clear();
-//    this->scene()->clearSelection();
-    auto *background_img_item = new QGraphicsPixmapItem(pix);
+    auto background_img_item = new QGraphicsPixmapItem(pix);
+    background_img_item->setData(0, "background picture");
     this->setSceneRect(pix.rect());
     background_img_item->setPos(0, 0);
     this->scene()->addItem(background_img_item);
+    is_load_background_picture_ = true;
     centerOn(this->sceneRect().center());
 }
 
 void AGraphicsView::set_draw_shape_status() {
     draw_rect_checked_ = true;
-    if (cross_item_ && !scene()->items().contains(cross_item_)) {
-        this->scene()->addItem(cross_item_);
-    }
+    show_cross_line();
 }
 
 void AGraphicsView::set_select_status() {
     draw_rect_checked_ = false;
-    if (cross_item_ && scene()->items().contains(cross_item_)) {
-        this->scene()->removeItem(cross_item_);
+    hide_cross_line();
+}
+
+void AGraphicsView::hide_cross_line() {
+    if (cross_item_) {
+        cross_item_->setVisible(false);
+        items_threshold_ = 1;
+        if (is_load_background_picture_) {
+            items_threshold_ = 2;
+        }
+        can_draw_ = false;
+    }
+}
+
+void AGraphicsView::show_cross_line() {
+
+    if (cross_item_ && draw_rect_checked_) {
+        cross_item_->setVisible(true);
+        items_threshold_ = 2;
+        if (is_load_background_picture_) {
+            items_threshold_ = 3;
+        }
+        can_draw_ = true;
     }
 }
 
@@ -252,5 +287,7 @@ void AGraphicsView::showEvent(QShowEvent *event) {
 void AGraphicsView::remove_item_from_scene(QGraphicsItem *item) {
     this->scene()->removeItem(item);
 }
+
+
 
 

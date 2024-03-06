@@ -43,6 +43,10 @@ private slots:
 
     void on_clearTool_triggered();
 
+    void on_scaleDownTool_triggered();
+
+    void on_scaleUpTool_triggered();
+
 private:
 
     void clear_all_tools_select();

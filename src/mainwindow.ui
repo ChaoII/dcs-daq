@@ -22,12 +22,18 @@
      <x>0</x>
      <y>0</y>
      <width>1007</width>
-     <height>22</height>
+     <height>21</height>
     </rect>
    </property>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <widget class="QToolBar" name="toolBar">
+   <property name="cursor">
+    <cursorShape>PointingHandCursor</cursorShape>
+   </property>
+   <property name="mouseTracking">
+    <bool>false</bool>
+   </property>
    <property name="windowTitle">
     <string>toolBar</string>
    </property>
@@ -42,6 +48,8 @@
    <addaction name="selectTool"/>
    <addaction name="rectangleTool"/>
    <addaction name="clearTool"/>
+   <addaction name="scaleUpTool"/>
+   <addaction name="scaleDownTool"/>
   </widget>
   <action name="rectangleTool">
    <property name="checkable">
@@ -107,6 +115,36 @@
    </property>
    <property name="toolTip">
     <string>清除所有图元</string>
+   </property>
+  </action>
+  <action name="scaleUpTool">
+   <property name="icon">
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/zoom_out.png</normaloff>:/images/zoom_out.png</iconset>
+   </property>
+   <property name="text">
+    <string>放大</string>
+   </property>
+   <property name="toolTip">
+    <string>放大</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+=</string>
+   </property>
+  </action>
+  <action name="scaleDownTool">
+   <property name="icon">
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/zoom_in.png</normaloff>:/images/zoom_in.png</iconset>
+   </property>
+   <property name="text">
+    <string>缩小</string>
+   </property>
+   <property name="toolTip">
+    <string>缩小</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+-</string>
    </property>
   </action>
  </widget>

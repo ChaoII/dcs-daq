@@ -4,6 +4,7 @@
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSplitter>
+#include <QCursor>
 
 
 MainWindow::MainWindow(QWidget *parent) :
@@ -28,6 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     auto action_group = new QActionGroup(this);
     action_group->addAction(ui->rectangleTool);
     action_group->addAction(ui->selectTool);
+    ui->selectTool->setChecked(true);
 
 
     auto *h_spliter = new QSplitter();
@@ -131,4 +133,14 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *e) {
     return QObject::eventFilter(watched, e);
 }
 
+
+void MainWindow::on_scaleDownTool_triggered() {
+//    setCursor(Q);
+    graphicsView_->scale_down();
+}
+
+
+void MainWindow::on_scaleUpTool_triggered() {
+    graphicsView_->scale_up();
+}
 

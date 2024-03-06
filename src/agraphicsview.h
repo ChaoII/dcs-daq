@@ -45,6 +45,10 @@ public:
 private:
     void center_scene();
 
+    void hide_cross_line();
+
+    void show_cross_line();
+
 protected:
 
     void mousePressEvent(QMouseEvent *event) override;
@@ -77,22 +81,30 @@ private slots:
 
 
 private:
-    QColor box_color = QColor(255, 0, 0, 30);
 
     Ui::AGraphicsView *ui;
 
+    /// 绘制矩形框的颜色
+    QColor box_color = QColor(255, 0, 0, 30);
+    /// 在鼠标移动前所点击的点
     QPoint last_point_;
-
+    /// 鼠标点击的当前点
     QPoint current_point_;
-
+    /// 临时画布，用于双缓冲绘图
     TempGraphicsItem *temp_canvas_ = nullptr;
-
-    bool draw_rect_checked_ = false;
-
+    /// 鼠标所在位置的十字线
     CrossItem *cross_item_ = nullptr;
-
+    /// 缩放比例
     ScaleRange scale_range_ = {};
-
+    /// 设置默认场景尺寸
     int default_scene_size_ = 0;
+    /// 绘制矩形按钮被选中
+    bool draw_rect_checked_ = false;
+    /// 注意，绘制矩形按钮被选中后，不一定能绘图，因为如果鼠标点在另一个可移动图元上进行绘图，会拖动当前图元的同时绘图，所以仅用了此行为
+    bool can_draw_ = true;
+    /// 是否加载背景
+    bool is_load_background_picture_ = false;
+    /// 当当前鼠标所在位置的图元数大于items_threshold_时禁用绘制行为，即设置can_draw_为false
+    int items_threshold_ = 2;
 };
 
