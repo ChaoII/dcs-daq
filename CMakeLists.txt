@@ -22,6 +22,8 @@ set(PROJECT_SOURCE_DIR
         src/mainwindow.ui
         src/tempgraphicsitem.h
         src/tempgraphicsitem.cpp
+        src/arectitem.h
+        src/arectitem.cpp
         qrc.qrc
         main.cpp
 )

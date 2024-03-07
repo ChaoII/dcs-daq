@@ -33,7 +33,7 @@ private slots:
 
     void on_rectangleTool_triggered();
 
-    void on_draw_rect_finished(QGraphicsItem *item);
+    void on_draw_rect_finished(ARectItem *item);
 
     void on_selectTool_triggered();
 

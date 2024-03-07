@@ -2,7 +2,6 @@
 #include "ui_agraphicsview.h"
 #include <QPixmap>
 #include <QMessageBox>
-#include <QUuid>
 #include "config.h"
 
 
@@ -10,7 +9,10 @@ AGraphicsView::AGraphicsView(QWidget *parent) :
         QGraphicsView(parent),
         ui(new Ui::AGraphicsView),
         scale_range_({Config::scale_range_min, Config::scale_range_max}),
-        default_scene_size_(Config::default_scene_size) {
+        default_scene_size_(Config::default_scene_size),
+        box_color_(QColor(QRandomGenerator::global()->bounded(256),
+                          QRandomGenerator::global()->bounded(256),
+                          QRandomGenerator::global()->bounded(256))) {
     ui->setupUi(this);
     this->setScene(new QGraphicsScene());
     setSceneRect(0, 0, Config::default_scene_size, Config::default_scene_size);
@@ -46,18 +48,13 @@ void AGraphicsView::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         last_point_ = event->pos();
         auto s = this->scene()->items(this->mapToScene(current_point_));
-        qDebug() << "===================";
         for (auto c: s) {
-            qDebug() << c->data(0).toString();
         }
-        qDebug() << "===================";
-        // temp item // cross item // maybe image item
         if (s.size() > items_threshold_) {
             hide_cross_line();
         } else {
             show_cross_line();
         }
-        qDebug() << "size:" << s.size() << "threshold:" << items_threshold_;
     }
     QGraphicsView::mousePressEvent(event);
 }
@@ -66,7 +63,7 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
     current_point_ = event->pos();
     if (draw_rect_checked_ && can_draw_) {
         if (event->buttons() & Qt::LeftButton) {
-            temp_canvas_->draw_shape(this->mapToScene(last_point_), this->mapToScene(current_point_));
+            temp_canvas_->draw_shape(this->mapToScene(last_point_), this->mapToScene(current_point_), box_color_);
         }
         if (cross_item_) {
             cross_item_->draw_shape(this->mapToScene(current_point_).toPoint(),
@@ -81,21 +78,11 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
 void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton && draw_rect_checked_ && can_draw_) {
         temp_canvas_->clear();
-        auto *item1 = new QGraphicsRectItem();
-        // 0 代表 id
-        auto id = QUuid::createUuid().toString();
-        item1->setData(0, id);
-        // 1 代表 name
-        item1->setData(1, "");
-        item1->setPen(QPen(Qt::red));
-        item1->setBrush(box_color);
-        item1->setFlags(QGraphicsItem::ItemIsMovable | QGraphicsItem::ItemIsSelectable);
-        item1->setRect(QRectF(this->mapToScene(last_point_),
-                              this->mapToScene(event->pos())));
-        item1->setCacheMode(QGraphicsItem::NoCache);
-
-        this->scene()->addItem(item1);
-        emit send_draw_final_signal(item1);
+        auto rect_item = new ARectItem(QRectF(this->mapToScene(last_point_),
+                                              this->mapToScene(event->pos())));
+        rect_item->set_color(box_color_);
+        this->scene()->addItem(rect_item);
+        emit send_draw_final_signal(rect_item);
     }
     QGraphicsView::mouseReleaseEvent(event);
 }
@@ -286,6 +273,10 @@ void AGraphicsView::showEvent(QShowEvent *event) {
 
 void AGraphicsView::remove_item_from_scene(QGraphicsItem *item) {
     this->scene()->removeItem(item);
+}
+
+void AGraphicsView::set_color(const QColor &color) {
+    box_color_ = color;
 }
 
 

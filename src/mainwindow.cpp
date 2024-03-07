@@ -76,9 +76,8 @@ void MainWindow::on_selectTool_triggered() {
     graphicsView_->set_select_status();
 }
 
-void MainWindow::on_draw_rect_finished(QGraphicsItem *item) {
-    auto id = item->data(0).toString();
-    auto list_item = new QListWidgetItem(id);
+void MainWindow::on_draw_rect_finished(ARectItem *item) {
+    auto list_item = new QListWidgetItem(item->get_id());
     item_list_->get_list_widget()->addItem(list_item);
     items_map_.insert(list_item, item);
     qDebug() << "--------" << items_map_.size();

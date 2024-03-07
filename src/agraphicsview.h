@@ -7,6 +7,7 @@
 #include <QGraphicsRectItem>
 #include "tempgraphicsitem.h"
 #include "crossitem.h"
+#include "arectitem.h"
 
 
 namespace Ui {
@@ -27,6 +28,8 @@ public:
     ~AGraphicsView();
 
     void add_image_item(const QPixmap &pix);
+
+    void set_color(const QColor &color);
 
     void set_draw_shape_status();
 
@@ -73,7 +76,7 @@ signals:
 
     void send_position_signal(const QPoint &, const QPoint &);
 
-    void send_draw_final_signal(QGraphicsItem *);
+    void send_draw_final_signal(ARectItem *);
 
     void item_selected_changed_signal();
 
@@ -83,9 +86,8 @@ private slots:
 private:
 
     Ui::AGraphicsView *ui;
-
     /// 绘制矩形框的颜色
-    QColor box_color = QColor(255, 0, 0, 30);
+    QColor box_color_;
     /// 在鼠标移动前所点击的点
     QPoint last_point_;
     /// 鼠标点击的当前点
