@@ -6,7 +6,6 @@ CrossItem::CrossItem() {
 }
 
 QRectF CrossItem::boundingRect() const {
-
     return QRect(0, 0, Config::default_scene_size, Config::default_scene_size);
 }
 
@@ -22,6 +21,7 @@ void CrossItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 }
 
 void CrossItem::draw_shape(const QPoint &cursor_point, const QPoint &left_top_point, const QPoint &right_bottom_point) {
+    prepareGeometryChange();
     cursor_point_ = cursor_point;
     left_top_point_ = left_top_point;
     right_bottom_point_ = right_bottom_point;

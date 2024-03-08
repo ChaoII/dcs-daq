@@ -8,7 +8,7 @@
 #include "tempgraphicsitem.h"
 #include "crossitem.h"
 #include "arectitem.h"
-
+#include "config.h"
 
 namespace Ui {
     class AGraphicsView;
@@ -44,6 +44,8 @@ public:
     void set_scale_range(double minimum, double maximum);
 
     void remove_item_from_scene(QGraphicsItem *);
+
+    void update_background_image(const QImage &img);
 
 private:
     void center_scene();
@@ -82,6 +84,8 @@ signals:
 
 private slots:
 
+    void on_mouse_is_enter_item(bool is_hover);
+
 
 private:
 
@@ -108,5 +112,6 @@ private:
     bool is_load_background_picture_ = false;
     /// 当当前鼠标所在位置的图元数大于items_threshold_时禁用绘制行为，即设置can_draw_为false
     int items_threshold_ = 2;
+    QGraphicsPixmapItem *background_img_item = nullptr;
 };
 

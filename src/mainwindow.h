@@ -4,6 +4,7 @@
 #include <QLabel>
 #include "itemlist.h"
 #include "agraphicsview.h"
+#include "acamerapro.h"
 
 namespace Ui {
     class MainWindow;
@@ -37,7 +38,7 @@ private slots:
 
     void on_selectTool_triggered();
 
-    void on_current_row_change(QListWidgetItem* list_item);
+    void on_current_row_change(QListWidgetItem *list_item);
 
     void on_item_selected_changed();
 
@@ -46,6 +47,8 @@ private slots:
     void on_scaleDownTool_triggered();
 
     void on_scaleUpTool_triggered();
+
+    void on_previewTool_triggered();
 
 private:
 
@@ -57,7 +60,7 @@ private:
     QLabel *status_scene_cord_ = nullptr;
     ItemList *item_list_ = nullptr;
     AGraphicsView *graphicsView_ = nullptr;
-    QMap<QListWidgetItem*, QGraphicsItem *> items_map_;
-    int last_row_index = -1;
+    QMap<QListWidgetItem *, QGraphicsItem *> items_map_;
+    ACameraPro *image_pro_ = nullptr;
 };
 

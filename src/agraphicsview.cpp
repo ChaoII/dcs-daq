@@ -2,7 +2,7 @@
 #include "ui_agraphicsview.h"
 #include <QPixmap>
 #include <QMessageBox>
-#include "config.h"
+
 
 
 AGraphicsView::AGraphicsView(QWidget *parent) :
@@ -15,15 +15,15 @@ AGraphicsView::AGraphicsView(QWidget *parent) :
                           QRandomGenerator::global()->bounded(256))) {
     ui->setupUi(this);
     this->setScene(new QGraphicsScene());
-    setSceneRect(0, 0, Config::default_scene_size, Config::default_scene_size);
+    setSceneRect(0, 0,
+                 Config::default_scene_size,
+                 Config::default_scene_size);
     this->setMouseTracking(true);
     temp_canvas_ = new TempGraphicsItem(QSize(default_scene_size_, default_scene_size_));
     this->scene()->addItem(temp_canvas_);
-    temp_canvas_->setData(0, "temp canvas");
 
     // 保证十字标线在最上方
     cross_item_ = new CrossItem();
-    cross_item_->setData(0, "cross item");
     cross_item_->setZValue(1);
     this->scene()->addItem(cross_item_);
 
@@ -33,8 +33,7 @@ AGraphicsView::AGraphicsView(QWidget *parent) :
     this->setDragMode(QGraphicsView::RubberBandDrag);
     this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
     this->setResizeAnchor(QGraphicsView::AnchorUnderMouse);
-//    this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
-    this->setViewportUpdateMode(QGraphicsView::SmartViewportUpdate);
+    this->setViewportUpdateMode(QGraphicsView::FullViewportUpdate);
     this->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
     this->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOff);
 
@@ -48,8 +47,6 @@ void AGraphicsView::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         last_point_ = event->pos();
         auto s = this->scene()->items(this->mapToScene(current_point_));
-        for (auto c: s) {
-        }
         if (s.size() > items_threshold_) {
             hide_cross_line();
         } else {
@@ -65,10 +62,11 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
         if (event->buttons() & Qt::LeftButton) {
             temp_canvas_->draw_shape(this->mapToScene(last_point_), this->mapToScene(current_point_), box_color_);
         }
-        if (cross_item_) {
+        if (cross_item_ and cross_item_->isVisible()) {
             cross_item_->draw_shape(this->mapToScene(current_point_).toPoint(),
                                     this->mapToScene(QPoint(0, 0)).toPoint(),
-                                    this->mapToScene(QPoint(this->width(), this->height())).toPoint());
+                                    this->mapToScene(QPoint(this->width(),
+                                                            this->height())).toPoint());
         }
     }
     emit send_position_signal(current_point_, this->mapToScene(current_point_).toPoint());
@@ -80,6 +78,7 @@ void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
         temp_canvas_->clear();
         auto rect_item = new ARectItem(QRectF(this->mapToScene(last_point_),
                                               this->mapToScene(event->pos())));
+        connect(rect_item, &ARectItem::mouse_hover_signal, this, &AGraphicsView::on_mouse_is_enter_item);
         rect_item->set_color(box_color_);
         this->scene()->addItem(rect_item);
         emit send_draw_final_signal(rect_item);
@@ -106,13 +105,10 @@ void AGraphicsView::paintEvent(QPaintEvent *event) {
 }
 
 void AGraphicsView::add_image_item(const QPixmap &pix) {
-    auto background_img_item = new QGraphicsPixmapItem(pix);
-    background_img_item->setData(0, "background picture");
+    background_img_item = new QGraphicsPixmapItem(pix);
     this->setSceneRect(pix.rect());
-    background_img_item->setPos(0, 0);
     this->scene()->addItem(background_img_item);
     is_load_background_picture_ = true;
-    centerOn(this->sceneRect().center());
 }
 
 void AGraphicsView::set_draw_shape_status() {
@@ -277,6 +273,21 @@ void AGraphicsView::remove_item_from_scene(QGraphicsItem *item) {
 
 void AGraphicsView::set_color(const QColor &color) {
     box_color_ = color;
+}
+
+void AGraphicsView::update_background_image(const QImage &img) {
+    if (background_img_item) {
+        background_img_item->setPixmap(QPixmap::fromImage(img));
+    }
+}
+
+void AGraphicsView::on_mouse_is_enter_item(bool is_hover) {
+
+//    if (is_hover) {
+//        hide_cross_line();
+//        return;
+//    }
+//    show_cross_line();
 }
 
 

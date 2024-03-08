@@ -8,35 +8,26 @@
 
 ARectItem::ARectItem(const QRectF &rect) :
         rect_(rect),
-        item_size_(rect.size()),
         color_(Qt::red),
         id_(QUuid::createUuid().toString()) {
     this->setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
-
     this->setCacheMode(QGraphicsItem::NoCache);
     this->item_ratio_ = rect.width() / rect.height();
     this->setAcceptHoverEvents(true);
-    this->m_RotatePixmap = QPixmap(":/images/rotate.png");
     this->rotate_hover_cursor_ = QCursor(
-            QPixmap(":/images/rotate_hover.png").scaled(32, 32, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    this->rotate_hover_cursor_ = QCursor(
-            QPixmap(":/images/rotate_press.png").scaled(32, 32, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+            QPixmap(":/images/rotate.png").scaled(32, 32, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
+    this->rotate_press_cursor_ = QCursor(
+            QPixmap(":/images/rotate.png").scaled(32, 32, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
-    dash_box_ = QRectF(rect.x() - pad_size_,
-                       rect.y() - pad_size_,
-                       rect.width() + 2 * pad_size_,
-                       rect.height() + 2 * pad_size_);
+    left_top_ = rect.topLeft();
 
-    // 坐标很奇妙
-    current_scene_pos_ = this->pos();
+    this->top_right_angle_ = qAtan(this->item_ratio_);
 
-    this->m_TopRightAngle = qAtan(this->item_ratio_);
+    this->top_left_angle_ = M_PI - this->top_right_angle_;
 
-    this->m_TopLeftAngle = M_PI - this->m_TopRightAngle;
+    this->bottom_right_angle_ = -1.0 * this->top_right_angle_;
 
-    this->m_BottomRightAngle = -1.0 * this->m_TopRightAngle;
-
-    this->m_BottomLeftAngle = -1.0 * this->m_TopLeftAngle;
+    this->bottom_left_angle_ = -1.0 * this->top_left_angle_;
 
     item_resize();
 }
@@ -54,12 +45,13 @@ QString ARectItem::get_id() {
 }
 
 QRectF ARectItem::boundingRect() const {
-
     QRectF rect = dash_box_;
     if (this->isSelected()) {
-        rect.adjust(-this->control_point_size_, -this->control_point_size_, this->control_point_size_,
+        rect.adjust(-this->control_point_size_,
+                    -this->control_point_size_,
+                    this->control_point_size_,
                     this->control_point_size_);
-        rect.adjust(0, 0, 0, this->ratio_line_len_ + this->m_RotateEllipseWidth);
+        rect.adjust(0, 0, 0, this->ratio_line_len_ + this->rotate_ellipse_width_);
     }
     return rect;
 }
@@ -80,13 +72,8 @@ void ARectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
 
     if (this->isSelected()) {
         // 边框区域颜色
-        painter->setPen(QPen(Qt::blue, 1, Qt::DashLine));
+        painter->setPen(QPen(Qt::gray, 1, Qt::DashLine));
         painter->setBrush(Qt::NoBrush);
-
-        dash_box_ = QRectF(rect_.x() - pad_size_,
-                           rect_.y() - pad_size_,
-                           rect_.width() + 2 * pad_size_,
-                           rect_.height() + 2 * pad_size_);
         painter->drawRect(dash_box_);
         painter->drawRect(boundingRect());
         painter->drawLine(QLineF(QPointF(dash_box_.left() + dash_box_.width() / 2,
@@ -95,47 +82,50 @@ void ARectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
                                          dash_box_.bottom() + this->ratio_line_len_)));
         painter->setPen(Qt::red);
         painter->setBrush(Qt::red);
-
         // left-top
-        painter->drawEllipse(this->m_TopLeftRect);
+        painter->drawEllipse(this->top_left_rect_);
         //left-bottom
-        painter->drawEllipse(this->m_BottomLeftRect);
+        painter->drawEllipse(this->bottom_left_rect_);
         //right-top
-        painter->drawEllipse(this->m_TopRightRect);
+        painter->drawEllipse(this->top_right_rect_);
         //right-bottom
-        painter->drawEllipse(this->m_BottomRightRect);
-
-        painter->drawPixmap(this->m_RotateRect, this->m_RotatePixmap, this->m_RotatePixmap.rect());
+        painter->drawEllipse(this->bottom_right_rect_);
+        painter->setPen(Qt::yellow);
+        painter->setBrush(Qt::yellow);
+        // rotate
+        painter->drawEllipse(this->rotate_rect_);
     }
 }
 
 void ARectItem::item_resize() {
 
-    this->m_TopLeftRect = QRectF(dash_box_.x() - control_point_size_ / 2.0,
-                                 dash_box_.y() - control_point_size_ / 2.0,
-                                 control_point_size_,
-                                 control_point_size_);
-    this->m_BottomLeftRect = QRectF(dash_box_.x() - control_point_size_ / 2.0,
-                                    dash_box_.bottomLeft().y() - control_point_size_ / 2.0,
-                                    control_point_size_,
-                                    control_point_size_);
-    this->m_TopRightRect = QRectF(dash_box_.topRight().x() - control_point_size_ / 2.0,
+    dash_box_ = QRectF(rect_.x() - pad_size_,
+                       rect_.y() - pad_size_,
+                       rect_.width() + 2 * pad_size_,
+                       rect_.height() + 2 * pad_size_);
+    this->top_left_rect_ = QRectF(dash_box_.x() - control_point_size_ / 2.0,
                                   dash_box_.y() - control_point_size_ / 2.0,
                                   control_point_size_,
                                   control_point_size_);
-    this->m_BottomRightRect = QRectF(dash_box_.bottomRight().x() - control_point_size_ / 2.0,
-                                     dash_box_.bottomRight().y() - control_point_size_ / 2.0,
+    this->bottom_left_rect_ = QRectF(dash_box_.x() - control_point_size_ / 2.0,
+                                     dash_box_.bottomLeft().y() - control_point_size_ / 2.0,
                                      control_point_size_,
                                      control_point_size_);
-    this->m_RotateRect = QRectF(dash_box_.left() + dash_box_.width() / 2.0 - m_RotateEllipseWidth / 2.0,
+    this->top_right_rect_ = QRectF(dash_box_.topRight().x() - control_point_size_ / 2.0,
+                                   dash_box_.y() - control_point_size_ / 2.0,
+                                   control_point_size_,
+                                   control_point_size_);
+    this->bottom_right_rect_ = QRectF(dash_box_.bottomRight().x() - control_point_size_ / 2.0,
+                                      dash_box_.bottomRight().y() - control_point_size_ / 2.0,
+                                      control_point_size_,
+                                      control_point_size_);
+    this->rotate_rect_ = QRectF(dash_box_.left() + dash_box_.width() / 2.0 - rotate_ellipse_width_ / 2.0,
                                 dash_box_.bottom() + ratio_line_len_,
-                                m_RotateEllipseWidth,
-                                m_RotateEllipseWidth);
-
-
+                                rotate_ellipse_width_,
+                                rotate_ellipse_width_);
 }
 
-Qt::CursorShape ARectItem::GetResizeCursorShape(qreal angle) {
+Qt::CursorShape ARectItem::get_resize_cursor_shape(qreal angle) {
     qreal sector = M_PI_4;
     qreal value = angle + sector / 2;
     qreal theta = fmod(value, M_PI);
@@ -143,7 +133,9 @@ Qt::CursorShape ARectItem::GetResizeCursorShape(qreal angle) {
         theta += M_PI;
     }
     int index = static_cast<int>(floor(theta / sector));
-//    qDebug()<<qRadiansToDegrees(angle)<<qRadiansToDegrees(theta)<<"index"<<index;
+
+    qDebug() << "index: " << index;
+
     switch (index) {
         case 0:
             return Qt::SizeHorCursor;
@@ -159,7 +151,6 @@ Qt::CursorShape ARectItem::GetResizeCursorShape(qreal angle) {
 }
 
 void ARectItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    this->setFocus();
     if (cursor_type_ == CursorType::HAND_OPEN_CURSOR) {
         press_pos_ = event->scenePos();
         cursor_type_ = CursorType::HAND_CLOSE_CURSOR;
@@ -170,9 +161,8 @@ void ARectItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
         this->press_pos_ = event->scenePos();
         this->operation_ = RESIZE;
     } else if (this->cursor_type_ == ROTATE_CURSOR) {
-        this->press_pos_ = event->pos();
+        this->press_pos_ = event->scenePos();
         this->transform_ = this->transform();
-//        qDebug()<<"angle"<<qRadiansToDegrees(qAsin(this->m_Transform.m12()));
         this->operation_ = ROTATE;
         this->setCursor(this->rotate_press_cursor_);
     }
@@ -180,47 +170,38 @@ void ARectItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 }
 
 void ARectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
+    prepareGeometryChange();
     switch (operation_) {
         case ItemOperation::MOVE: {
-            qDebug() << "===========================================";
-            qDebug() << "current_scene_pos_" << current_scene_pos_;
-            qDebug() << "leftTop:" << rect_.topLeft();
-            qDebug() << "Pose" << event->pos();
-            qDebug() << "scenePose" << event->scenePos();
-            qDebug() << "mapToScene:" << this->mapToScene(event->pos());
-            qDebug() << "mapToScene1:" << this->mapToScene(event->scenePos());
-            this->setPos(this->current_scene_pos_ + event->scenePos() - this->press_pos_);
-            this->update();
+            rect_ = QRectF(left_top_ + event->scenePos() - this->press_pos_,
+                           QSizeF(rect_.width(), rect_.height()));
+            item_resize();
             break;
         }
         case ItemOperation::RESIZE: {
-            QPointF diff = event->pos() - this->press_pos_;
-            if (abs(diff.x()) < 5 || abs(diff.y()) < 5) return;
-//            if (abs(diff.x()) > item_size_.width() - 5 || abs(diff.y()) > item_size_.height() - 5) return;
             switch (this->cursor_type_) {
                 case RESIZE_LEFT_TOP_CURSOR: {
-                    rect_ = QRectF(event->scenePos(), QPointF(rect_.bottomRight()));
+                    resize_and_check_rect(event->scenePos(), QPointF(rect_.bottomRight()), rect_);
                     break;
                 }
                 case RESIZE_RIGHT_TOP_CURSOR: {
-                    rect_ = QRectF(QPointF(rect_.left(), event->scenePos().y()),
-                                   QPointF(event->scenePos().x(), rect_.bottom()));
+                    resize_and_check_rect(QPointF(rect_.left(), event->scenePos().y()),
+                                          QPointF(event->scenePos().x(), rect_.bottom()), rect_);
                     break;
                 }
                 case RESIZE_LEFT_BOTTOM_CURSOR: {
-                    rect_ = QRectF(QPointF(event->scenePos().x(), rect_.top()),
-                                   QPointF(rect_.right(), event->scenePos().y()));
+                    resize_and_check_rect(QPointF(event->scenePos().x(), rect_.top()),
+                                          QPointF(rect_.right(), event->scenePos().y()), rect_);
                     break;
                 }
                 case RESIZE_RIGHT_BOTTOM_CURSOR: {
-                    rect_ = QRectF(rect_.topLeft(), event->scenePos());
+                    resize_and_check_rect(rect_.topLeft(), event->scenePos(), rect_);
                     break;
                 }
                 default:
                     break;
             }
             item_resize();
-            this->update();
             break;
         }
         case ItemOperation::ROTATE: {
@@ -253,8 +234,7 @@ void ARectItem::mouseReleaseEvent(QGraphicsSceneMouseEvent *event) {
     this->setCursor(Qt::ArrowCursor);
     this->cursor_type_ = CursorType::ARROW_CURSOR;
     this->operation_ = ItemOperation::NONE;
-    this->current_scene_pos_ = this->pos();
-    this->item_size_ = rect_.size();
+    left_top_ = rect_.topLeft();
     QGraphicsItem::mouseReleaseEvent(event);
 }
 
@@ -268,27 +248,27 @@ void ARectItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
         qreal angle = qAtan2(this->transform().m12(), this->transform().m11());
         QMarginsF pad = QMarginsF(1, 1, 1, 1);
         rect.adjust(-this->pad_size_, -this->pad_size_, this->pad_size_, this->pad_size_);
-        if ((this->m_TopLeftRect + pad).contains(pos)) {
+        if ((this->top_left_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_LEFT_TOP_CURSOR;
-            angle = this->m_TopLeftAngle - angle;
-            this->setCursor(GetResizeCursorShape(angle));
+            angle = this->top_left_angle_ - angle;
+            this->setCursor(get_resize_cursor_shape(angle));
             this->setToolTip(QString("缩放"));
-        } else if ((this->m_BottomRightRect + pad).contains(pos)) {
+        } else if ((this->bottom_right_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_RIGHT_BOTTOM_CURSOR;
-            angle = this->m_BottomRightAngle - angle;
-            this->setCursor(GetResizeCursorShape(angle));
+            angle = this->bottom_right_angle_ - angle;
+            this->setCursor(get_resize_cursor_shape(angle));
             this->setToolTip(QString("缩放"));
-        } else if ((this->m_TopRightRect + pad).contains(pos)) {
+        } else if ((this->top_right_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_RIGHT_TOP_CURSOR;
-            angle = this->m_TopRightAngle - angle;
-            this->setCursor(GetResizeCursorShape(angle));
+            angle = this->top_right_angle_ - angle;
+            this->setCursor(get_resize_cursor_shape(angle));
             this->setToolTip(QString("缩放"));
-        } else if ((this->m_BottomLeftRect + pad).contains(pos)) {
+        } else if ((this->bottom_left_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_LEFT_BOTTOM_CURSOR;
-            angle = this->m_BottomLeftAngle - angle;
-            this->setCursor(GetResizeCursorShape(angle));
+            angle = this->bottom_left_angle_ - angle;
+            this->setCursor(get_resize_cursor_shape(angle));
             this->setToolTip(QString("缩放"));
-        } else if ((this->m_RotateRect + pad).contains(pos)) {
+        } else if ((this->rotate_rect_ + pad).contains(pos)) {
             this->cursor_type_ = ROTATE_CURSOR;
             this->setCursor(this->rotate_hover_cursor_);
             this->setToolTip(QString("旋转"));
@@ -300,6 +280,8 @@ void ARectItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
             }
         }
     }
+    // 鼠标进入item后隐藏cross
+    emit mouse_hover_signal(true);
     QGraphicsItem::hoverEnterEvent(event);
 }
 
@@ -313,23 +295,23 @@ void ARectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         qreal angle = qAtan2(this->transform().m12(), this->transform().m11());
         QMarginsF pad = QMarginsF(1, 1, 1, 1);
         rect.adjust(-this->pad_size_, -this->pad_size_, this->pad_size_, this->pad_size_);
-        if ((this->m_TopLeftRect + pad).contains(pos)) {
+        if ((this->top_left_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_LEFT_TOP_CURSOR;
-            angle = this->m_TopLeftAngle - angle;
-            this->setCursor(GetResizeCursorShape(angle));
-        } else if ((this->m_BottomRightRect + pad).contains(pos)) {
+            angle = this->top_left_angle_ - angle;
+            this->setCursor(get_resize_cursor_shape(angle));
+        } else if ((this->bottom_right_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_RIGHT_BOTTOM_CURSOR;
-            angle = this->m_BottomRightAngle - angle;
-            this->setCursor(GetResizeCursorShape(angle));
-        } else if ((this->m_TopRightRect + pad).contains(pos)) {
+            angle = this->bottom_right_angle_ - angle;
+            this->setCursor(get_resize_cursor_shape(angle));
+        } else if ((this->top_right_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_RIGHT_TOP_CURSOR;
-            angle = this->m_TopRightAngle - angle;
-            this->setCursor(GetResizeCursorShape(angle));
-        } else if ((this->m_BottomLeftRect + pad).contains(pos)) {
+            angle = this->top_right_angle_ - angle;
+            this->setCursor(get_resize_cursor_shape(angle));
+        } else if ((this->bottom_left_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_LEFT_BOTTOM_CURSOR;
-            angle = this->m_BottomLeftAngle - angle;
-            this->setCursor(GetResizeCursorShape(angle));
-        } else if ((this->m_RotateRect + pad).contains(pos)) {
+            angle = this->bottom_left_angle_ - angle;
+            this->setCursor(get_resize_cursor_shape(angle));
+        } else if ((this->rotate_rect_ + pad).contains(pos)) {
             this->cursor_type_ = ROTATE_CURSOR;
             this->setCursor(this->rotate_hover_cursor_);
         } else {
@@ -345,13 +327,16 @@ void ARectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
 void ARectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
     this->cursor_type_ = ARROW_CURSOR;
     this->setCursor(Qt::ArrowCursor);
+    // 鼠标离开后取消cross隐藏状态
+    emit mouse_hover_signal(false);
+
     QGraphicsItem::hoverLeaveEvent(event);
 }
 
 QVariant ARectItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) {
 
-    if (change == QGraphicsItem::ItemSelectedChange)
-        prepareGeometryChange();
+//    if (change == QGraphicsItem::ItemSelectedChange)
+    prepareGeometryChange();
     return QGraphicsItem::itemChange(change, value);
 }
 
@@ -364,5 +349,13 @@ void ARectItem::keyPressEvent(QKeyEvent *event) {
 
     QGraphicsItem::keyPressEvent(event);
 }
+
+void ARectItem::resize_and_check_rect(const QPointF &p1, const QPointF &p2, QRectF &rect) {
+    QRectF temp_rect(p1, p2);
+    if (temp_rect.width() < 5 || temp_rect.height() < 5) return;
+    rect = temp_rect;
+}
+
+
 
 

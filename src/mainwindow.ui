@@ -50,6 +50,8 @@
    <addaction name="clearTool"/>
    <addaction name="scaleUpTool"/>
    <addaction name="scaleDownTool"/>
+   <addaction name="previewTool"/>
+   <addaction name="captureTool"/>
   </widget>
   <action name="rectangleTool">
    <property name="checkable">
@@ -145,6 +147,33 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+-</string>
+   </property>
+  </action>
+  <action name="previewTool">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/preview.png</normaloff>:/images/preview.png</iconset>
+   </property>
+   <property name="text">
+    <string>预览</string>
+   </property>
+   <property name="toolTip">
+    <string>预览</string>
+   </property>
+  </action>
+  <action name="captureTool">
+   <property name="icon">
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/capture.png</normaloff>:/images/capture.png</iconset>
+   </property>
+   <property name="text">
+    <string>捕获</string>
+   </property>
+   <property name="toolTip">
+    <string>捕获</string>
    </property>
   </action>
  </widget>

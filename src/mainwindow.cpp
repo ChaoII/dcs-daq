@@ -40,6 +40,12 @@ MainWindow::MainWindow(QWidget *parent) :
     h_spliter->addWidget(item_list_);
     ui->rectangleTool->setEnabled(true);
 
+
+    image_pro_ = new ACameraPro(this);
+    connect(image_pro_, &ACameraPro::send_image_signal, this, [&](const QImage &img) {
+        graphicsView_->update_background_image(img);
+    });
+
     connect(graphicsView_, &AGraphicsView::send_position_signal, this, &MainWindow::update_position_label);
     connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::on_draw_rect_finished);
     connect(graphicsView_, &AGraphicsView::item_selected_changed_signal, this, &MainWindow::on_item_selected_changed);
@@ -80,9 +86,7 @@ void MainWindow::on_draw_rect_finished(ARectItem *item) {
     auto list_item = new QListWidgetItem(item->get_id());
     item_list_->get_list_widget()->addItem(list_item);
     items_map_.insert(list_item, item);
-    qDebug() << "--------" << items_map_.size();
 }
-
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (event->key() == Qt::Key_Delete) {
@@ -132,14 +136,17 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *e) {
     return QObject::eventFilter(watched, e);
 }
 
-
 void MainWindow::on_scaleDownTool_triggered() {
-//    setCursor(Q);
     graphicsView_->scale_down();
 }
-
 
 void MainWindow::on_scaleUpTool_triggered() {
     graphicsView_->scale_up();
 }
+
+void MainWindow::on_previewTool_triggered() {
+    image_pro_->start();
+    graphicsView_->add_image_item(QPixmap(QSize(Config::frame_width, Config::frame_height)));
+}
+
 
