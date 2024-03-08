@@ -29,7 +29,7 @@ MainWindow::MainWindow(QWidget *parent) :
     auto action_group = new QActionGroup(this);
     action_group->addAction(ui->rectangleTool);
     action_group->addAction(ui->selectTool);
-    ui->selectTool->setChecked(true);
+    action_group->addAction(ui->previewTool);
 
 
     auto *h_spliter = new QSplitter();
@@ -38,7 +38,6 @@ MainWindow::MainWindow(QWidget *parent) :
     item_list_ = new ItemList();
     h_spliter->addWidget(graphicsView_);
     h_spliter->addWidget(item_list_);
-    ui->rectangleTool->setEnabled(true);
 
 
     image_pro_ = new ACameraPro(this);
@@ -50,6 +49,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::on_draw_rect_finished);
     connect(graphicsView_, &AGraphicsView::item_selected_changed_signal, this, &MainWindow::on_item_selected_changed);
     connect(item_list_->get_list_widget(), &QListWidget::itemClicked, this, &MainWindow::on_current_row_change);
+
+    init_widget();
 }
 
 void MainWindow::update_position_label(const QPoint &view_position, const QPoint &scene_position) {
@@ -63,16 +64,6 @@ MainWindow::~MainWindow() {
     delete ui;
 }
 
-void MainWindow::on_openfileAction_triggered() {
-    QString file_path = QFileDialog::getOpenFileName(this, "打开文件", "", "Image FIle (*.jpg *.jpeg *.png)");
-    QPixmap pix(file_path);
-    if (pix.isNull()) {
-        QMessageBox::warning(this, "警告", "文件打开失败，不支持的文件格式，仅支持jpg、png、bmp 格式");
-        return;
-    }
-    graphicsView_->add_image_item(pix);
-    ui->rectangleTool->setEnabled(true);
-}
 
 void MainWindow::on_rectangleTool_triggered() {
     graphicsView_->set_draw_shape_status();
@@ -80,6 +71,9 @@ void MainWindow::on_rectangleTool_triggered() {
 
 void MainWindow::on_selectTool_triggered() {
     graphicsView_->set_select_status();
+    ui->rectangleTool->setEnabled(true);
+    ui->clearTool->setEnabled(true);
+    image_pro_->stop();
 }
 
 void MainWindow::on_draw_rect_finished(ARectItem *item) {
@@ -146,7 +140,17 @@ void MainWindow::on_scaleUpTool_triggered() {
 
 void MainWindow::on_previewTool_triggered() {
     image_pro_->start();
+    ui->rectangleTool->setEnabled(false);
+    ui->clearTool->setEnabled(false);
+}
+
+void MainWindow::init_widget() {
     graphicsView_->add_image_item(QPixmap(QSize(Config::frame_width, Config::frame_height)));
+    is_preview_ = true;
+    image_pro_->start();
+    ui->previewTool->setChecked(true);
+    ui->rectangleTool->setEnabled(false);
+    ui->clearTool->setEnabled(false);
 }
 
 

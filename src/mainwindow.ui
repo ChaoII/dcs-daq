@@ -43,14 +43,13 @@
    <attribute name="toolBarBreak">
     <bool>false</bool>
    </attribute>
-   <addaction name="openfileAction"/>
+   <addaction name="previewTool"/>
    <addaction name="separator"/>
    <addaction name="selectTool"/>
    <addaction name="rectangleTool"/>
    <addaction name="clearTool"/>
    <addaction name="scaleUpTool"/>
    <addaction name="scaleDownTool"/>
-   <addaction name="previewTool"/>
    <addaction name="captureTool"/>
   </widget>
   <action name="rectangleTool">
@@ -72,21 +71,6 @@
    </property>
    <property name="shortcut">
     <string>R</string>
-   </property>
-  </action>
-  <action name="openfileAction">
-   <property name="icon">
-    <iconset resource="../qrc.qrc">
-     <normaloff>:/images/open.png</normaloff>:/images/open.png</iconset>
-   </property>
-   <property name="text">
-    <string>打开文件</string>
-   </property>
-   <property name="toolTip">
-    <string>打开文件</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+O</string>
    </property>
   </action>
   <action name="selectTool">
@@ -166,7 +150,7 @@
   </action>
   <action name="captureTool">
    <property name="icon">
-    <iconset resource="../qrc.qrc">
+    <iconset>
      <normaloff>:/images/capture.png</normaloff>:/images/capture.png</iconset>
    </property>
    <property name="text">

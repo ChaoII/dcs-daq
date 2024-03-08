@@ -28,8 +28,6 @@ public slots:
 
     void update_position_label(const QPoint &, const QPoint &);
 
-    void on_openfileAction_triggered();
-
 private slots:
 
     void on_rectangleTool_triggered();
@@ -54,6 +52,8 @@ private:
 
     void clear_all_tools_select();
 
+    void init_widget();
+
 private:
     Ui::MainWindow *ui;
     QLabel *status_view_cord_ = nullptr;
@@ -62,5 +62,6 @@ private:
     AGraphicsView *graphicsView_ = nullptr;
     QMap<QListWidgetItem *, QGraphicsItem *> items_map_;
     ACameraPro *image_pro_ = nullptr;
+    bool is_preview_ = false;
 };
 
