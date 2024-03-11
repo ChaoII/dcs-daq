@@ -17,6 +17,7 @@ ARectListItem *ARectList::add_item(const QString &name, const QRectF &rect) {
     auto rect_list_item = new ARectListItem();
     rect_list_item->set_item(name, rect);
     connect(rect_list_item, &ARectListItem::clicked_signal, this, &ARectList::on_receive_item_selected);
+    connect(rect_list_item, &ARectListItem::selected_status_change_signal, this, &ARectList::on_item_row_changed);
     ui->scrollAreaInterLayout->addWidget(rect_list_item);
     return rect_list_item;
 }
@@ -35,9 +36,6 @@ void ARectList::re_set_order() {
         auto rect_list_item = dynamic_cast<ARectListItem *>(it->widget());
         if (rect_list_item) {
             rect_list_item->get_order_label()->setText(QString::number(i));
-            if (i == 0) {
-                rect_list_item->set_selected(true);
-            }
         }
     }
 }
@@ -53,11 +51,19 @@ void ARectList::clear_item_selected() {
 }
 
 void ARectList::mousePressEvent(QMouseEvent *event) {
+    clear_item_selected();
     QWidget::mousePressEvent(event);
 }
 
 void ARectList::on_receive_item_selected() {
     clear_item_selected();
+}
+
+void ARectList::on_item_row_changed() {
+    auto rect_list_item = dynamic_cast<ARectListItem *>(sender());
+    if (rect_list_item) {
+        emit item_change_item(rect_list_item);
+    }
 }
 
 

@@ -40,6 +40,8 @@ private slots:
 
     void on_item_selected_changed();
 
+    void on_item_changed(ARectItem *);
+
     void on_clearTool_triggered();
 
     void on_scaleDownTool_triggered();
@@ -60,7 +62,7 @@ private:
     QLabel *status_scene_cord_ = nullptr;
     ARectList *item_list_ = nullptr;
     AGraphicsView *graphicsView_ = nullptr;
-    QMap<ARectListItem *, QGraphicsItem *> items_map_;
+    QMap<ARectListItem *, ARectItem *> items_map_;
     ACameraPro *image_pro_ = nullptr;
     bool is_preview_ = false;
 };

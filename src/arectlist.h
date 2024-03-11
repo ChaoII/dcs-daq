@@ -37,6 +37,8 @@ private slots:
 
     void on_receive_item_selected();
 
+    void on_item_row_changed();
+
 private:
     Ui::ARectList *ui;
 

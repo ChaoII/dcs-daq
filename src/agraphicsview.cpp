@@ -4,7 +4,6 @@
 #include <QMessageBox>
 
 
-
 AGraphicsView::AGraphicsView(QWidget *parent) :
         QGraphicsView(parent),
         ui(new Ui::AGraphicsView),
@@ -79,6 +78,7 @@ void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
         auto rect_item = new ARectItem(QRectF(this->mapToScene(last_point_),
                                               this->mapToScene(event->pos())));
         connect(rect_item, &ARectItem::mouse_hover_signal, this, &AGraphicsView::on_mouse_is_enter_item);
+        connect(rect_item, &ARectItem::item_changed_signal, this, &AGraphicsView::on_item_changed);
         rect_item->set_color(box_color_);
         this->scene()->addItem(rect_item);
         emit send_draw_final_signal(rect_item);
@@ -230,10 +230,47 @@ void AGraphicsView::drawBackground(QPainter *painter, const QRectF &r) {
 }
 
 void AGraphicsView::keyPressEvent(QKeyEvent *event) {
+    qDebug() << event->key();
     switch (event->key()) {
         case Qt::Key_Shift:
             this->setDragMode(QGraphicsView::ScrollHandDrag);
             break;
+        case Qt::Key_Right: {
+            for (auto &item: scene()->selectedItems()) {
+                auto rect_item = dynamic_cast<ARectItem *>(item);
+                if (rect_item) {
+                    rect_item->move_by(QPointF(1, 0));
+                    emit item_changed_signal(rect_item);
+                }
+            }
+        }
+        case Qt::Key_Left: {
+            for (auto &item: scene()->selectedItems()) {
+                auto rect_item = dynamic_cast<ARectItem *>(item);
+                if (rect_item) {
+                    rect_item->move_by(QPointF(-1, 0));
+                    emit item_changed_signal(rect_item);
+                }
+            }
+        }
+//        case Qt::Key_Up: {
+//            for (auto &item: scene()->selectedItems()) {
+//                auto rect_item = dynamic_cast<ARectItem *>(item);
+//                if (rect_item) {
+//                    rect_item->move_by(QPointF(0, -1));
+//                    emit item_changed_signal(rect_item);
+//                }
+//            }
+//        }
+//        case Qt::Key_Down: {
+//            for (auto &item: scene()->selectedItems()) {
+//                auto rect_item = dynamic_cast<ARectItem *>(item);
+//                if (rect_item) {
+//                    rect_item->move_by(QPointF(0, 1));
+//                    emit item_changed_signal(rect_item);
+//                }
+//            }
+//        }
         default:
             break;
     }
@@ -289,6 +326,14 @@ void AGraphicsView::on_mouse_is_enter_item(bool is_hover) {
 //    }
 //    show_cross_line();
 }
+
+void AGraphicsView::on_item_changed() {
+    auto item = dynamic_cast<ARectItem *>(sender());
+    if (item) {
+        emit item_changed_signal(item);
+    }
+}
+
 
 
 

@@ -82,9 +82,13 @@ signals:
 
     void item_selected_changed_signal();
 
+    void item_changed_signal(ARectItem *);
+
 private slots:
 
     void on_mouse_is_enter_item(bool is_hover);
+
+    void on_item_changed();
 
 
 private:

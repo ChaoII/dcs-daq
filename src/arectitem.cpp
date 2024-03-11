@@ -29,7 +29,7 @@ ARectItem::ARectItem(const QRectF &rect) :
 
     this->bottom_left_angle_ = -1.0 * this->top_left_angle_;
 
-    item_resize();
+    update_item();
 }
 
 void ARectItem::set_name(const QString &name) {
@@ -97,7 +97,7 @@ void ARectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
     }
 }
 
-void ARectItem::item_resize() {
+void ARectItem::update_item() {
 
     dash_box_ = QRectF(rect_.x() - pad_size_,
                        rect_.y() - pad_size_,
@@ -123,6 +123,7 @@ void ARectItem::item_resize() {
                                 dash_box_.bottom() + ratio_line_len_,
                                 rotate_ellipse_width_,
                                 rotate_ellipse_width_);
+    update();
 }
 
 Qt::CursorShape ARectItem::get_resize_cursor_shape(qreal angle) {
@@ -175,7 +176,8 @@ void ARectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         case ItemOperation::MOVE: {
             rect_ = QRectF(left_top_ + event->scenePos() - this->press_pos_,
                            QSizeF(rect_.width(), rect_.height()));
-            item_resize();
+            update_item();
+
             break;
         }
         case ItemOperation::RESIZE: {
@@ -201,7 +203,7 @@ void ARectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
                 default:
                     break;
             }
-            item_resize();
+            update_item();
             break;
         }
         case ItemOperation::ROTATE: {
@@ -226,6 +228,7 @@ void ARectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
         default:
             break;
     }
+    emit item_changed_signal();
     QGraphicsItem::mouseMoveEvent(event);
 }
 
@@ -329,7 +332,6 @@ void ARectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
     this->setCursor(Qt::ArrowCursor);
     // 鼠标离开后取消cross隐藏状态
     emit mouse_hover_signal(false);
-
     QGraphicsItem::hoverLeaveEvent(event);
 }
 
@@ -337,16 +339,17 @@ QVariant ARectItem::itemChange(QGraphicsItem::GraphicsItemChange change, const Q
 
 //    if (change == QGraphicsItem::ItemSelectedChange)
     prepareGeometryChange();
+
     return QGraphicsItem::itemChange(change, value);
 }
 
 void ARectItem::keyPressEvent(QKeyEvent *event) {
 
+    qDebug() << event->key();
     if (event->key() == Qt::Key_R) {
-        qDebug() << "asdasd";
+        qDebug() << "sssssss";
         moveBy(1, 1);
     }
-
     QGraphicsItem::keyPressEvent(event);
 }
 
@@ -354,6 +357,17 @@ void ARectItem::resize_and_check_rect(const QPointF &p1, const QPointF &p2, QRec
     QRectF temp_rect(p1, p2);
     if (temp_rect.width() < 5 || temp_rect.height() < 5) return;
     rect = temp_rect;
+}
+
+QRectF ARectItem::get_inner_rect() {
+    return rect_;
+}
+
+void ARectItem::move_by(const QPointF &point) {
+    rect_ = QRectF(left_top_ + point,
+                   QSizeF(rect_.width(), rect_.height()));
+    left_top_ = rect_.topLeft();
+    update_item();
 }
 
 

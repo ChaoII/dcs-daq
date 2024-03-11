@@ -38,10 +38,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     item_list_ = new ARectList();
 
-
     h_spliter->addWidget(graphicsView_);
     h_spliter->addWidget(item_list_);
-
 
     image_pro_ = new ACameraPro(this);
     connect(image_pro_, &ACameraPro::send_image_signal, this, [&](const QImage &img) {
@@ -51,6 +49,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(graphicsView_, &AGraphicsView::send_position_signal, this, &MainWindow::update_position_label);
     connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::on_draw_rect_finished);
     connect(graphicsView_, &AGraphicsView::item_selected_changed_signal, this, &MainWindow::on_item_selected_changed);
+    connect(graphicsView_, &AGraphicsView::item_changed_signal, this, &MainWindow::on_item_changed);
     connect(item_list_, &ARectList::item_change_item, this, &MainWindow::on_current_row_change);
 
     init_widget();
@@ -80,9 +79,7 @@ void MainWindow::on_selectTool_triggered() {
 }
 
 void MainWindow::on_draw_rect_finished(ARectItem *item) {
-
-    auto list_item = item_list_->add_item(item->get_id(), item->sceneBoundingRect());
-
+    auto list_item = item_list_->add_item(item->get_id(), item->get_inner_rect());
     items_map_.insert(list_item, item);
     item_list_->re_set_order();
 }
@@ -105,12 +102,12 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::on_item_selected_changed() {
-    QMap<ARectListItem *, QGraphicsItem *>::iterator it;
+    QMap<ARectListItem *, ARectItem *>::iterator it;
     for (it = items_map_.begin(); it != items_map_.end(); it++) {
         if (it.value()->isSelected()) {
-//            it.key()->setSelected(true);
+            it.key()->set_selected(true);
         } else {
-//            it.key()->setSelected(false);
+            it.key()->set_selected(false);
         }
     }
 }
@@ -118,7 +115,7 @@ void MainWindow::on_item_selected_changed() {
 void MainWindow::on_current_row_change(ARectListItem *rect_list_item) {
     auto cur_item = items_map_[rect_list_item];
     if (cur_item) {
-        cur_item->setSelected(!cur_item->isSelected());
+        cur_item->setSelected(rect_list_item->set_selected_status());
     }
 }
 
@@ -157,5 +154,16 @@ void MainWindow::init_widget() {
     ui->rectangleTool->setEnabled(false);
     ui->clearTool->setEnabled(false);
 }
+
+void MainWindow::on_item_changed(ARectItem *item) {
+    QMap<ARectListItem *, ARectItem *>::iterator it;
+    for (it = items_map_.begin(); it != items_map_.end(); it++) {
+        if (it.value()->get_id() == item->get_id()) {
+            it.key()->update_rect(it.value()->get_inner_rect());
+        }
+    }
+
+}
+
 
 

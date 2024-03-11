@@ -29,6 +29,8 @@ public:
 
     bool set_selected_status();
 
+    void update_rect(const QRectF &rect);
+
 protected:
 
     void mousePressEvent(QMouseEvent *event) override;
@@ -36,6 +38,8 @@ protected:
 signals:
 
     void clicked_signal();
+
+    void selected_status_change_signal();
 
 private:
 

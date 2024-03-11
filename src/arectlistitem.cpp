@@ -21,16 +21,13 @@ ARectListItem::~ARectListItem() {
 void ARectListItem::mousePressEvent(QMouseEvent *event) {
 
     if (event->button() == Qt::LeftButton) {
-        if (QApplication::keyboardModifiers() & Qt::ControlModifier) {
-            // Ctrl + 鼠标左键被按下
-            // 在这里处理你的逻辑
-        } else {
-            // 其他情况，可以调用基类的mousePressEvent
+        if (!(QApplication::keyboardModifiers() & Qt::ControlModifier)) {
             emit clicked_signal();
         }
     }
     set_selected(!selected_status_);
-    QWidget::mousePressEvent(event);
+    // 注意，拦截事件
+    // QWidget::mousePressEvent(event);
 }
 
 void ARectListItem::set_selected(bool status) {
@@ -40,6 +37,7 @@ void ARectListItem::set_selected(bool status) {
     } else {
         setStyleSheet("background-color: rgba(160, 160, 160, 40)");
     }
+    emit selected_status_change_signal();
 }
 
 void ARectListItem::set_item(const QString &name, const QRectF &rect) {
@@ -50,10 +48,18 @@ void ARectListItem::set_item(const QString &name, const QRectF &rect) {
     ui->lb_height->setText(QString::number(rect.height()));
 }
 
+
 QLabel *ARectListItem::get_order_label() {
     return ui->lb_order;
 }
 
 bool ARectListItem::set_selected_status() {
     return selected_status_;
+}
+
+void ARectListItem::update_rect(const QRectF &rect) {
+    ui->lb_x->setText(QString::number(rect.x()));
+    ui->lb_y->setText(QString::number(rect.y()));
+    ui->lb_width->setText(QString::number(rect.width()));
+    ui->lb_height->setText(QString::number(rect.height()));
 }

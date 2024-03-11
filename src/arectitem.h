@@ -58,7 +58,11 @@ public:
     void set_color(const QColor &color);
 
     /// 更新item的参数
-    void item_resize();
+    void update_item();
+
+    QRectF get_inner_rect();
+
+    void move_by(const QPointF &point);
 
 private:
     /// 根据角度计算鼠标光标的类型
@@ -93,7 +97,7 @@ protected:
 
 signals:
 
-    void item_change_signal();
+    void item_changed_signal();
 
     void mouse_hover_signal(bool is_hover);
 
