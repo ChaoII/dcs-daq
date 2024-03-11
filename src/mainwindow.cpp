@@ -35,7 +35,10 @@ MainWindow::MainWindow(QWidget *parent) :
     auto *h_spliter = new QSplitter();
     h_spliter->setOrientation(Qt::Horizontal);
     this->centralWidget()->layout()->addWidget(h_spliter);
-    item_list_ = new ItemList();
+
+    item_list_ = new ARectList();
+
+
     h_spliter->addWidget(graphicsView_);
     h_spliter->addWidget(item_list_);
 
@@ -48,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(graphicsView_, &AGraphicsView::send_position_signal, this, &MainWindow::update_position_label);
     connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::on_draw_rect_finished);
     connect(graphicsView_, &AGraphicsView::item_selected_changed_signal, this, &MainWindow::on_item_selected_changed);
-    connect(item_list_->get_list_widget(), &QListWidget::itemClicked, this, &MainWindow::on_current_row_change);
+    connect(item_list_, &ARectList::item_change_item, this, &MainWindow::on_current_row_change);
 
     init_widget();
 }
@@ -77,8 +80,9 @@ void MainWindow::on_selectTool_triggered() {
 }
 
 void MainWindow::on_draw_rect_finished(ARectItem *item) {
-    auto list_item = new QListWidgetItem(item->get_id());
-    item_list_->get_list_widget()->addItem(list_item);
+
+    auto list_item = item_list_->add_item(item->get_id(), item->sceneBoundingRect());
+
     items_map_.insert(list_item, item);
 }
 
@@ -100,18 +104,18 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::on_item_selected_changed() {
-    QMap<QListWidgetItem *, QGraphicsItem *>::iterator it;
+    QMap<ARectListItem *, QGraphicsItem *>::iterator it;
     for (it = items_map_.begin(); it != items_map_.end(); it++) {
         if (it.value()->isSelected()) {
-            it.key()->setSelected(true);
+//            it.key()->setSelected(true);
         } else {
-            it.key()->setSelected(false);
+//            it.key()->setSelected(false);
         }
     }
 }
 
-void MainWindow::on_current_row_change(QListWidgetItem *list_item) {
-    auto cur_item = items_map_[list_item];
+void MainWindow::on_current_row_change(ARectListItem *rect_list_item) {
+    auto cur_item = items_map_[rect_list_item];
     if (cur_item) {
         cur_item->setSelected(!cur_item->isSelected());
     }
@@ -122,7 +126,7 @@ void MainWindow::on_clearTool_triggered() {
         graphicsView_->remove_item_from_scene(item);
     }
     items_map_.clear();
-    item_list_->get_list_widget()->clear();
+    item_list_->clear();
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *e) {

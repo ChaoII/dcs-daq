@@ -2,7 +2,7 @@
 
 #include <QMainWindow>
 #include <QLabel>
-#include "itemlist.h"
+#include "arectlist.h"
 #include "agraphicsview.h"
 #include "acamerapro.h"
 
@@ -36,7 +36,7 @@ private slots:
 
     void on_selectTool_triggered();
 
-    void on_current_row_change(QListWidgetItem *list_item);
+    void on_current_row_change(ARectListItem *table_item);
 
     void on_item_selected_changed();
 
@@ -58,9 +58,9 @@ private:
     Ui::MainWindow *ui;
     QLabel *status_view_cord_ = nullptr;
     QLabel *status_scene_cord_ = nullptr;
-    ItemList *item_list_ = nullptr;
+    ARectList *item_list_ = nullptr;
     AGraphicsView *graphicsView_ = nullptr;
-    QMap<QListWidgetItem *, QGraphicsItem *> items_map_;
+    QMap<ARectListItem *, QGraphicsItem *> items_map_;
     ACameraPro *image_pro_ = nullptr;
     bool is_preview_ = false;
 };

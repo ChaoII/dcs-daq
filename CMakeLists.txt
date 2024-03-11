@@ -14,9 +14,8 @@ set(PROJECT_SOURCE_DIR
         src/agraphicsview.ui
         src/crossitem.h
         src/crossitem.cpp
-        src/itemlist.h
-        src/itemlist.cpp
-        src/itemlist.ui
+        src/arectlist.h
+        src/arectlist.cpp
         src/mainwindow.h
         src/mainwindow.cpp
         src/mainwindow.ui
@@ -26,6 +25,9 @@ set(PROJECT_SOURCE_DIR
         src/arectitem.cpp
         src/acamerapro.h
         src/acamerapro.cpp
+        src/arectlistitem.h
+        src/arectlistitem.cpp
+        src/arectlistitem.ui
         qrc.qrc
         main.cpp
 )
