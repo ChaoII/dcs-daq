@@ -5,6 +5,8 @@
 #pragma once
 
 #include <QWidget>
+#include <QLabel>
+#include <QMouseEvent>
 
 
 QT_BEGIN_NAMESPACE
@@ -19,9 +21,16 @@ public:
 
     ~ARectListItem() override;
 
-    void set_item(const QString& name,const QRectF& rect);
+    void set_item(const QString &name, const QRectF &rect);
+
+    QLabel *get_order_label();
+
+    void set_selected(bool status);
+
+    bool set_selected_status();
 
 protected:
+
     void mousePressEvent(QMouseEvent *event) override;
 
 signals:
@@ -29,7 +38,12 @@ signals:
     void clicked_signal();
 
 private:
+
+    QString last_style_sheet_;
+
     Ui::ARectListItem *ui;
+
+    bool selected_status_ = false;
 };
 
 

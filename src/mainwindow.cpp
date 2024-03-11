@@ -84,6 +84,7 @@ void MainWindow::on_draw_rect_finished(ARectItem *item) {
     auto list_item = item_list_->add_item(item->get_id(), item->sceneBoundingRect());
 
     items_map_.insert(list_item, item);
+    item_list_->re_set_order();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {

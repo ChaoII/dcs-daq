@@ -1,0 +1,22 @@
+/*arectlistitem.cpp*/
+#lb_itemName {
+    border-width: 0px 0px 1px 0px;
+    border-style: solid;
+    border-color: rgb(200, 200, 200)
+}
+
+#lb_order, #lb_x, #lb_y, #lb_width {
+    border-width: 0px 1px 0px 0px;
+    border-style: solid;
+    border-color: rgb(200, 200, 200)
+}
+
+#lb_order {
+    font-size: 20px;
+    color: rgb(255, 0, 0);
+}
+
+#ARectListItem {
+    border: 1px solid rgb(255, 255, 255);
+    background-color: rgba(160, 160, 160, 40)
+}

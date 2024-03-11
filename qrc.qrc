@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
+    <file>style.css</file>
     <file>images/preview.png</file>
     <file>images/rotate.png</file>
     <file>images/clear.png</file>

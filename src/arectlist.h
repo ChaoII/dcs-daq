@@ -2,6 +2,7 @@
 
 #include <QWidget>
 #include <QLabel>
+#include <QMouseEvent>
 #include "arectlistitem.h"
 
 QT_BEGIN_NAMESPACE
@@ -18,10 +19,14 @@ public:
 
     ARectListItem *add_item(const QString &name, const QRectF &rect);
 
-
     void clear();
 
+    void re_set_order();
+
+    void clear_item_selected();
+
 protected:
+    void mousePressEvent(QMouseEvent *event) override;
 
 
 signals:
@@ -29,6 +34,8 @@ signals:
     void item_change_item(ARectListItem *);
 
 private slots:
+
+    void on_receive_item_selected();
 
 private:
     Ui::ARectList *ui;
