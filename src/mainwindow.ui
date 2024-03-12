@@ -48,9 +48,11 @@
    <addaction name="selectTool"/>
    <addaction name="rectangleTool"/>
    <addaction name="clearTool"/>
+   <addaction name="saveTool"/>
+   <addaction name="importTool"/>
+   <addaction name="separator"/>
    <addaction name="scaleUpTool"/>
    <addaction name="scaleDownTool"/>
-   <addaction name="captureTool"/>
   </widget>
   <action name="rectangleTool">
    <property name="checkable">
@@ -148,16 +150,34 @@
     <string>预览</string>
    </property>
   </action>
-  <action name="captureTool">
+  <action name="saveTool">
    <property name="icon">
-    <iconset>
-     <normaloff>:/images/capture.png</normaloff>:/images/capture.png</iconset>
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/save.png</normaloff>:/images/save.png</iconset>
    </property>
    <property name="text">
-    <string>捕获</string>
+    <string>保存</string>
    </property>
    <property name="toolTip">
-    <string>捕获</string>
+    <string>保存</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="importTool">
+   <property name="icon">
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/import.png</normaloff>:/images/import.png</iconset>
+   </property>
+   <property name="text">
+    <string>导入</string>
+   </property>
+   <property name="toolTip">
+    <string>导入标签</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
    </property>
   </action>
  </widget>

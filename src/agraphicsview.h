@@ -25,7 +25,7 @@ Q_OBJECT
 public:
     explicit AGraphicsView(QWidget *parent = nullptr);
 
-    ~AGraphicsView();
+    ~AGraphicsView() override;
 
     void add_image_item(const QPixmap &pix);
 

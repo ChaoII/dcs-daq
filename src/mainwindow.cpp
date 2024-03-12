@@ -88,9 +88,12 @@ void MainWindow::on_selectTool_triggered() {
     graphicsView_->set_select_status();
     ui->rectangleTool->setEnabled(true);
     ui->clearTool->setEnabled(true);
+    ui->importTool->setEnabled(true);
+    ui->saveTool->setEnabled(true);
     image_pro_->stop();
     timer->stop();
     is_preview_ = false;
+    enable_all_rect_item();
 }
 
 void MainWindow::on_draw_rect_finished(ARectItem *item) {
@@ -115,11 +118,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
             }
         }
     }
-    if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_S) {
-        // 保存工作
-        json_array_ = image_label_to_json();
-        Utils::write_json(json_array_, "label.json");
-    }
 }
 
 
@@ -142,11 +140,7 @@ void MainWindow::on_current_row_change(ARectListItem *rect_list_item) {
 }
 
 void MainWindow::on_clearTool_triggered() {
-    for (auto item: items_map_) {
-        graphicsView_->remove_item_from_scene(item);
-    }
-    items_map_.clear();
-    item_list_->clear();
+    clear_label();
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *e) {
@@ -165,8 +159,32 @@ void MainWindow::on_scaleUpTool_triggered() {
 void MainWindow::on_previewTool_triggered() {
     image_pro_->start();
     timer->start();
+    graphicsView_->set_select_status();
     ui->rectangleTool->setEnabled(false);
     ui->clearTool->setEnabled(false);
+    ui->importTool->setEnabled(false);
+    ui->saveTool->setEnabled(false);
+    disable_all_rect_item();
+}
+
+void MainWindow::on_saveTool_triggered() {
+    json_array_ = image_label_to_json();
+    Utils::write_json(json_array_, "label.json");
+    QMessageBox::information(this,"提示","文件[label.json]保存成功");
+}
+
+void MainWindow::on_importTool_triggered() {
+    clear_label();
+    json_array_ = Utils::read_json("label.json");
+    for (auto object: json_array_) {
+        auto id = object.toObject().value("name").toString();
+        auto box = object.toObject().value("box").toObject();
+        auto x = box.value("x").toDouble();
+        auto y = box.value("y").toDouble();
+        auto w = box.value("w").toDouble();
+        auto h = box.value("h").toDouble();
+        graphicsView_->draw_real_rect(id, QRectF(x, y, w, h));
+    }
 }
 
 void MainWindow::init_widget() {
@@ -176,20 +194,14 @@ void MainWindow::init_widget() {
     ui->previewTool->setChecked(true);
     ui->rectangleTool->setEnabled(false);
     ui->clearTool->setEnabled(false);
+    ui->importTool->setEnabled(false);
+    ui->saveTool->setEnabled(false);
     timer->start();
     ocr_thread_.start();
 
     QTimer::singleShot(2000, [&]() {
-        json_array_ = Utils::read_json("label.json");
-        for (auto object: json_array_) {
-            auto id = object.toObject().value("name").toString();
-            auto box = object.toObject().value("box").toObject();
-            auto x = box.value("x").toDouble();
-            auto y = box.value("y").toDouble();
-            auto w = box.value("w").toDouble();
-            auto h = box.value("h").toDouble();
-            graphicsView_->draw_real_rect(id, QRectF(x, y, w, h));
-        }
+        load_outer_label("label.json");
+        disable_all_rect_item();
     });
 }
 
@@ -229,6 +241,45 @@ void MainWindow::on_ocr_recognize() {
     cv::Mat img = Utils::qImageToCvMat(current_image_);
     emit predict_signal(img, json_array_);
 }
+
+void MainWindow::disable_all_rect_item() {
+    QMap<ARectListItem *, ARectItem *>::iterator it;
+    for (it = items_map_.begin(); it != items_map_.end(); it++) {
+        it.value()->setEnabled(false);
+        it.key()->setEnabled(false);
+    }
+}
+
+void MainWindow::enable_all_rect_item() {
+    QMap<ARectListItem *, ARectItem *>::iterator it;
+    for (it = items_map_.begin(); it != items_map_.end(); it++) {
+        it.value()->setEnabled(true);
+        it.key()->setEnabled(true);
+    }
+}
+
+void MainWindow::load_outer_label(const QString &file_name) {
+    json_array_ = Utils::read_json(file_name);
+    for (auto object: json_array_) {
+        auto id = object.toObject().value("name").toString();
+        auto box = object.toObject().value("box").toObject();
+        auto x = box.value("x").toDouble();
+        auto y = box.value("y").toDouble();
+        auto w = box.value("w").toDouble();
+        auto h = box.value("h").toDouble();
+        graphicsView_->draw_real_rect(id, QRectF(x, y, w, h));
+    }
+}
+
+void MainWindow::clear_label() {
+    for (auto item: items_map_) {
+        graphicsView_->remove_item_from_scene(item);
+    }
+    items_map_.clear();
+    item_list_->clear();
+}
+
+
 
 
 

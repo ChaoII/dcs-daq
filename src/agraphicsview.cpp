@@ -74,7 +74,6 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
 
 void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton && draw_rect_checked_ && can_draw_) {
-
         draw_real_rect(QUuid::createUuid().toString(),
                        QRectF(this->mapToScene(last_point_),
                               this->mapToScene(event->pos())));

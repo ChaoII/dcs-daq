@@ -18,7 +18,7 @@ Q_OBJECT
 public:
     explicit MainWindow(QWidget *parent = nullptr);
 
-    ~MainWindow();
+    ~MainWindow() override;
 
 protected:
 
@@ -36,11 +36,7 @@ public slots:
 
 private slots:
 
-    void on_rectangleTool_triggered();
-
     void on_draw_rect_finished(ARectItem *item);
-
-    void on_selectTool_triggered();
 
     void on_current_row_change(ARectListItem *table_item);
 
@@ -48,7 +44,11 @@ private slots:
 
     void on_item_changed(ARectItem *);
 
+    void on_rectangleTool_triggered();
+
     void on_clearTool_triggered();
+
+    void on_selectTool_triggered();
 
     void on_scaleDownTool_triggered();
 
@@ -56,17 +56,27 @@ private slots:
 
     void on_previewTool_triggered();
 
+    void on_saveTool_triggered();
+
+    void on_importTool_triggered();
+
     void on_update_image(const QImage &img);
 
     void on_ocr_recognize();
 
-private:
 
-    void clear_all_tools_select();
+private:
+    void clear_label();
 
     void init_widget();
 
     QJsonArray image_label_to_json();
+
+    void load_outer_label(const QString&);
+
+    void disable_all_rect_item();
+
+    void enable_all_rect_item();
 
 private:
     Ui::MainWindow *ui;
