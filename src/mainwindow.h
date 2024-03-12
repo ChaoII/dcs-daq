@@ -5,6 +5,8 @@
 #include "arectlist.h"
 #include "agraphicsview.h"
 #include "acamerapro.h"
+#include "ocr/ppocrv4.h"
+#include <QThread>
 
 namespace Ui {
     class MainWindow;
@@ -23,6 +25,10 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
     bool eventFilter(QObject *watched, QEvent *e) override;
+
+signals:
+
+    void predict_signal(const cv::Mat &image, const QJsonArray &json_array);
 
 public slots:
 
@@ -50,11 +56,17 @@ private slots:
 
     void on_previewTool_triggered();
 
+    void on_update_image(const QImage &img);
+
+    void on_ocr_recognize();
+
 private:
 
     void clear_all_tools_select();
 
     void init_widget();
+
+    QJsonArray image_label_to_json();
 
 private:
     Ui::MainWindow *ui;
@@ -65,5 +77,9 @@ private:
     QMap<ARectListItem *, ARectItem *> items_map_;
     ACameraPro *image_pro_ = nullptr;
     bool is_preview_ = false;
+    QThread ocr_thread_;
+    QImage current_image_;
+    QJsonArray json_array_;
+    QTimer *timer = nullptr;
 };
 

@@ -24,7 +24,7 @@ ARectListItem *ARectList::add_item(const QString &name, const QRectF &rect) {
 
 void ARectList::clear() {
     QLayoutItem *item;
-    while ((item = this->layout()->takeAt(0)) != nullptr) {
+    while ((item = ui->scrollAreaInterLayout->layout()->takeAt(0)) != nullptr) {
         delete item->widget();  // 删除控件
         delete item;            // 删除布局项
     }

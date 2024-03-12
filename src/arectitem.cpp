@@ -6,10 +6,10 @@
 #include <QUuid>
 #include <QVector2D>
 
-ARectItem::ARectItem(const QRectF &rect) :
+ARectItem::ARectItem(const QString &id, const QRectF &rect) :
         rect_(rect),
         color_(Qt::red),
-        id_(QUuid::createUuid().toString()) {
+        id_(id) {
     this->setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
     this->setCacheMode(QGraphicsItem::NoCache);
     this->item_ratio_ = rect.width() / rect.height();
@@ -161,11 +161,6 @@ void ARectItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
             (this->cursor_type_ == RESIZE_LEFT_BOTTOM_CURSOR) | (this->cursor_type_ == RESIZE_RIGHT_BOTTOM_CURSOR)) {
         this->press_pos_ = event->scenePos();
         this->operation_ = RESIZE;
-    } else if (this->cursor_type_ == ROTATE_CURSOR) {
-        this->press_pos_ = event->scenePos();
-        this->transform_ = this->transform();
-        this->operation_ = ROTATE;
-        this->setCursor(this->rotate_press_cursor_);
     }
     QGraphicsItem::mousePressEvent(event);
 }
@@ -204,25 +199,6 @@ void ARectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
                     break;
             }
             update_item();
-            break;
-        }
-        case ItemOperation::ROTATE: {
-            auto startVect = QVector2D(this->press_pos_);
-            startVect.normalize();
-            auto endVect = QVector2D(event->pos());
-            endVect.normalize();
-            qreal value = QVector2D::dotProduct(startVect, endVect);
-            if (value > 1.0)
-                value = 1.0;
-            else if (value < -1.0)
-                value = -1.0;
-            qreal angle = qRadiansToDegrees(qAcos(value));
-            QVector3D vect = QVector3D::crossProduct(QVector3D(startVect, 1.0), QVector3D(endVect, 1.0));
-            if (vect.z() < 0)
-                angle *= -1.0;
-            this->transform_.rotate(angle);
-            this->setTransform(this->transform_);
-            this->update();
             break;
         }
         default:
@@ -271,10 +247,6 @@ void ARectItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
             angle = this->bottom_left_angle_ - angle;
             this->setCursor(get_resize_cursor_shape(angle));
             this->setToolTip(QString("缩放"));
-        } else if ((this->rotate_rect_ + pad).contains(pos)) {
-            this->cursor_type_ = ROTATE_CURSOR;
-            this->setCursor(this->rotate_hover_cursor_);
-            this->setToolTip(QString("旋转"));
         } else {
             if (rect.contains(pos)) {
                 this->cursor_type_ = HAND_OPEN_CURSOR;
@@ -314,9 +286,6 @@ void ARectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
             this->cursor_type_ = RESIZE_LEFT_BOTTOM_CURSOR;
             angle = this->bottom_left_angle_ - angle;
             this->setCursor(get_resize_cursor_shape(angle));
-        } else if ((this->rotate_rect_ + pad).contains(pos)) {
-            this->cursor_type_ = ROTATE_CURSOR;
-            this->setCursor(this->rotate_hover_cursor_);
         } else {
             if (rect.contains(pos)) {
                 this->cursor_type_ = HAND_OPEN_CURSOR;
@@ -336,21 +305,8 @@ void ARectItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *event) {
 }
 
 QVariant ARectItem::itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) {
-
-//    if (change == QGraphicsItem::ItemSelectedChange)
     prepareGeometryChange();
-
     return QGraphicsItem::itemChange(change, value);
-}
-
-void ARectItem::keyPressEvent(QKeyEvent *event) {
-
-    qDebug() << event->key();
-    if (event->key() == Qt::Key_R) {
-        qDebug() << "sssssss";
-        moveBy(1, 1);
-    }
-    QGraphicsItem::keyPressEvent(event);
 }
 
 void ARectItem::resize_and_check_rect(const QPointF &p1, const QPointF &p2, QRectF &rect) {

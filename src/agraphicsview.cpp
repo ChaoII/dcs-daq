@@ -74,14 +74,10 @@ void AGraphicsView::mouseMoveEvent(QMouseEvent *event) {
 
 void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton && draw_rect_checked_ && can_draw_) {
-        temp_canvas_->clear();
-        auto rect_item = new ARectItem(QRectF(this->mapToScene(last_point_),
-                                              this->mapToScene(event->pos())));
-        connect(rect_item, &ARectItem::mouse_hover_signal, this, &AGraphicsView::on_mouse_is_enter_item);
-        connect(rect_item, &ARectItem::item_changed_signal, this, &AGraphicsView::on_item_changed);
-        rect_item->set_color(box_color_);
-        this->scene()->addItem(rect_item);
-        emit send_draw_final_signal(rect_item);
+
+        draw_real_rect(QUuid::createUuid().toString(),
+                       QRectF(this->mapToScene(last_point_),
+                              this->mapToScene(event->pos())));
     }
     QGraphicsView::mouseReleaseEvent(event);
 }
@@ -100,9 +96,6 @@ void AGraphicsView::wheelEvent(QWheelEvent *event) {
     }
 }
 
-void AGraphicsView::paintEvent(QPaintEvent *event) {
-    QGraphicsView::paintEvent(event);
-}
 
 void AGraphicsView::add_image_item(const QPixmap &pix) {
     background_img_item = new QGraphicsPixmapItem(pix);
@@ -230,7 +223,6 @@ void AGraphicsView::drawBackground(QPainter *painter, const QRectF &r) {
 }
 
 void AGraphicsView::keyPressEvent(QKeyEvent *event) {
-    qDebug() << event->key();
     switch (event->key()) {
         case Qt::Key_Shift:
             this->setDragMode(QGraphicsView::ScrollHandDrag);
@@ -243,6 +235,7 @@ void AGraphicsView::keyPressEvent(QKeyEvent *event) {
                     emit item_changed_signal(rect_item);
                 }
             }
+            break;
         }
         case Qt::Key_Left: {
             for (auto &item: scene()->selectedItems()) {
@@ -252,25 +245,28 @@ void AGraphicsView::keyPressEvent(QKeyEvent *event) {
                     emit item_changed_signal(rect_item);
                 }
             }
+            break;
         }
-//        case Qt::Key_Up: {
-//            for (auto &item: scene()->selectedItems()) {
-//                auto rect_item = dynamic_cast<ARectItem *>(item);
-//                if (rect_item) {
-//                    rect_item->move_by(QPointF(0, -1));
-//                    emit item_changed_signal(rect_item);
-//                }
-//            }
-//        }
-//        case Qt::Key_Down: {
-//            for (auto &item: scene()->selectedItems()) {
-//                auto rect_item = dynamic_cast<ARectItem *>(item);
-//                if (rect_item) {
-//                    rect_item->move_by(QPointF(0, 1));
-//                    emit item_changed_signal(rect_item);
-//                }
-//            }
-//        }
+        case Qt::Key_Up: {
+            for (auto &item: scene()->selectedItems()) {
+                auto rect_item = dynamic_cast<ARectItem *>(item);
+                if (rect_item) {
+                    rect_item->move_by(QPointF(0, -1));
+                    emit item_changed_signal(rect_item);
+                }
+            }
+            break;
+        }
+        case Qt::Key_Down: {
+            for (auto &item: scene()->selectedItems()) {
+                auto rect_item = dynamic_cast<ARectItem *>(item);
+                if (rect_item) {
+                    rect_item->move_by(QPointF(0, 1));
+                    emit item_changed_signal(rect_item);
+                }
+            }
+            break;
+        }
         default:
             break;
     }
@@ -316,6 +312,7 @@ void AGraphicsView::update_background_image(const QImage &img) {
     if (background_img_item) {
         background_img_item->setPixmap(QPixmap::fromImage(img));
     }
+    emit update_image_signal(img);
 }
 
 void AGraphicsView::on_mouse_is_enter_item(bool is_hover) {
@@ -333,6 +330,17 @@ void AGraphicsView::on_item_changed() {
         emit item_changed_signal(item);
     }
 }
+
+void AGraphicsView::draw_real_rect(const QString &id, const QRectF &rect) {
+    temp_canvas_->clear();
+    auto rect_item = new ARectItem(id, rect);
+    connect(rect_item, &ARectItem::mouse_hover_signal, this, &AGraphicsView::on_mouse_is_enter_item);
+    connect(rect_item, &ARectItem::item_changed_signal, this, &AGraphicsView::on_item_changed);
+    rect_item->set_color(box_color_);
+    this->scene()->addItem(rect_item);
+    emit send_draw_final_signal(rect_item);
+}
+
 
 
 

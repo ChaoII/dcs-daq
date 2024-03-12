@@ -46,11 +46,22 @@ MainWindow::MainWindow(QWidget *parent) :
         graphicsView_->update_background_image(img);
     });
 
+
+    auto ocr_thread = new PPOCRV4("ch_PP-OCRv4_rec_infer", "dict.txt", false, 4);
+    ocr_thread->moveToThread(&ocr_thread_);
+    connect(&ocr_thread_, &QThread::finished, ocr_thread, &PPOCRV4::deleteLater);
+    connect(this, &MainWindow::predict_signal, ocr_thread, &PPOCRV4::predict, Qt::BlockingQueuedConnection);
+
     connect(graphicsView_, &AGraphicsView::send_position_signal, this, &MainWindow::update_position_label);
     connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::on_draw_rect_finished);
     connect(graphicsView_, &AGraphicsView::item_selected_changed_signal, this, &MainWindow::on_item_selected_changed);
     connect(graphicsView_, &AGraphicsView::item_changed_signal, this, &MainWindow::on_item_changed);
+    connect(graphicsView_, &AGraphicsView::update_image_signal, this, &MainWindow::on_update_image);
     connect(item_list_, &ARectList::item_change_item, this, &MainWindow::on_current_row_change);
+
+    timer = new QTimer(this);
+    timer->setInterval(2000);
+    connect(timer, &QTimer::timeout, this, &MainWindow::on_ocr_recognize);
 
     init_widget();
 }
@@ -63,6 +74,8 @@ void MainWindow::update_position_label(const QPoint &view_position, const QPoint
 }
 
 MainWindow::~MainWindow() {
+    ocr_thread_.quit();
+    ocr_thread_.wait();
     delete ui;
 }
 
@@ -76,6 +89,8 @@ void MainWindow::on_selectTool_triggered() {
     ui->rectangleTool->setEnabled(true);
     ui->clearTool->setEnabled(true);
     image_pro_->stop();
+    timer->stop();
+    is_preview_ = false;
 }
 
 void MainWindow::on_draw_rect_finished(ARectItem *item) {
@@ -85,7 +100,7 @@ void MainWindow::on_draw_rect_finished(ARectItem *item) {
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
-    if (event->key() == Qt::Key_Delete) {
+    if (!is_preview_ && event->key() == Qt::Key_Delete) {
         for (auto it = items_map_.begin(); it != items_map_.end();) {
             if (it.value()->isSelected()) {
                 // notice 删除当前元素的顺序非常重要
@@ -93,13 +108,20 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
                 delete it.key();
                 // 删除并且迭代器后移
                 it = items_map_.erase(it);
+                item_list_->re_set_order();
             } else {
                 // 如果不满足条件，移动到下一个元素
                 ++it;
             }
         }
     }
+    if (event->modifiers() == Qt::ControlModifier && event->key() == Qt::Key_S) {
+        // 保存工作
+        json_array_ = image_label_to_json();
+        Utils::write_json(json_array_, "label.json");
+    }
 }
+
 
 void MainWindow::on_item_selected_changed() {
     QMap<ARectListItem *, ARectItem *>::iterator it;
@@ -142,6 +164,7 @@ void MainWindow::on_scaleUpTool_triggered() {
 
 void MainWindow::on_previewTool_triggered() {
     image_pro_->start();
+    timer->start();
     ui->rectangleTool->setEnabled(false);
     ui->clearTool->setEnabled(false);
 }
@@ -153,6 +176,21 @@ void MainWindow::init_widget() {
     ui->previewTool->setChecked(true);
     ui->rectangleTool->setEnabled(false);
     ui->clearTool->setEnabled(false);
+    timer->start();
+    ocr_thread_.start();
+
+    QTimer::singleShot(2000, [&]() {
+        json_array_ = Utils::read_json("label.json");
+        for (auto object: json_array_) {
+            auto id = object.toObject().value("name").toString();
+            auto box = object.toObject().value("box").toObject();
+            auto x = box.value("x").toDouble();
+            auto y = box.value("y").toDouble();
+            auto w = box.value("w").toDouble();
+            auto h = box.value("h").toDouble();
+            graphicsView_->draw_real_rect(id, QRectF(x, y, w, h));
+        }
+    });
 }
 
 void MainWindow::on_item_changed(ARectItem *item) {
@@ -162,8 +200,37 @@ void MainWindow::on_item_changed(ARectItem *item) {
             it.key()->update_rect(it.value()->get_inner_rect());
         }
     }
-
 }
+
+QJsonArray MainWindow::image_label_to_json() {
+    // 弹出保存文件对话框
+    QJsonArray arr_phone;
+    QJsonObject obj_root, json_box;
+    QMap<ARectListItem *, ARectItem *>::iterator it;
+    for (it = items_map_.begin(); it != items_map_.end(); it++) {
+        auto rect = it.value()->get_inner_rect();
+        obj_root["name"] = it.value()->get_id();
+        json_box["x"] = rect.x();
+        json_box["y"] = rect.y();
+        json_box["w"] = rect.width();
+        json_box["h"] = rect.height();
+        obj_root["box"] = json_box;
+        arr_phone.append(obj_root);
+    }
+    return arr_phone;
+}
+
+void MainWindow::on_update_image(const QImage &img) {
+    current_image_ = img;
+}
+
+void MainWindow::on_ocr_recognize() {
+    if (current_image_.isNull()) return;
+    cv::Mat img = Utils::qImageToCvMat(current_image_);
+    emit predict_signal(img, json_array_);
+}
+
+
 
 
 

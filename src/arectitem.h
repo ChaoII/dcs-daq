@@ -22,8 +22,6 @@ class ARectItem : public QGraphicsObject {
         MOVE,
         /// 缩放操作
         RESIZE,
-        /// 旋转操作
-        ROTATE
     };
     /// 鼠标类型
     enum CursorType {
@@ -34,12 +32,11 @@ class ARectItem : public QGraphicsObject {
         RESIZE_RIGHT_BOTTOM_CURSOR,
         HAND_OPEN_CURSOR,
         HAND_CLOSE_CURSOR,
-        ROTATE_CURSOR,
     };
 
 Q_OBJECT
 public:
-    explicit ARectItem(const QRectF &rect);
+    explicit ARectItem(const QString &id, const QRectF &rect);
 
     /// 设置item名称
     /// \param name item名称
@@ -91,8 +88,6 @@ protected:
 
     void hoverLeaveEvent(QGraphicsSceneHoverEvent *event) override;
 
-    void keyPressEvent(QKeyEvent *event) override;
-
     QVariant itemChange(QGraphicsItem::GraphicsItemChange change, const QVariant &value) override;
 
 signals:
@@ -125,11 +120,11 @@ private:
     /// 外边界框矩形距Item的pad
     int pad_size_ = 10;
     /// 四角缩放控制点图像直径
-    int control_point_size_ = 10;
+    int control_point_size_ = 6;
     /// 旋转点距离外框矩形的距离
-    int ratio_line_len_ = 20;
+    int ratio_line_len_ = 12;
     /// //旋转点图像直径
-    int rotate_ellipse_width_ = 20;
+    int rotate_ellipse_width_ = 10;
     /// item选中时四个缩放控制点和旋转控制点的绘制位置
     QRectF top_left_rect_, top_right_rect_, bottom_left_rect_, bottom_right_rect_, rotate_rect_;
     /// 各顶点的角度

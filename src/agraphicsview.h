@@ -47,6 +47,8 @@ public:
 
     void update_background_image(const QImage &img);
 
+    void draw_real_rect(const QString &id, const QRectF &rect);
+
 private:
     void center_scene();
 
@@ -68,8 +70,6 @@ protected:
 
     void wheelEvent(QWheelEvent *event) override;
 
-    void paintEvent(QPaintEvent *event) override;
-
     void showEvent(QShowEvent *event) override;
 
     void drawBackground(QPainter *painter, const QRectF &r) override;
@@ -84,11 +84,14 @@ signals:
 
     void item_changed_signal(ARectItem *);
 
+    void update_image_signal(const QImage &);
+
 private slots:
 
     void on_mouse_is_enter_item(bool is_hover);
 
     void on_item_changed();
+
 
 
 private:

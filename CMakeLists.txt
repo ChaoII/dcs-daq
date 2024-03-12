@@ -6,6 +6,10 @@ set(CMAKE_AUTOMOC ON)
 set(CMAKE_AUTORCC ON)
 set(CMAKE_AUTOUIC ON)
 
+
+set(FD_DIRECTORY "E:/Fastdeploy/build/install" CACHE PATH "fastdeploy install directory")
+include(${FD_DIRECTORY}/FastDeploy.cmake)
+
 find_package(Qt6 COMPONENTS Widgets Multimedia REQUIRED)
 
 set(PROJECT_SOURCE_DIR
@@ -28,13 +32,20 @@ set(PROJECT_SOURCE_DIR
         src/arectlistitem.h
         src/arectlistitem.cpp
         src/arectlistitem.ui
+        src/ocr/ppocrv4.h
+        src/ocr/ppocrv4.cpp
+        src/utils/utils.h
+        src/utils/utils.cpp
         qrc.qrc
         main.cpp
 )
-
 include_directories(${CMAKE_SOURCE_DIR}/src)
+include_directories(${FASTDEPLOY_INCS})
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR})
-target_link_libraries(${PROJECT_NAME} PRIVATE Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Multimedia)
+target_link_libraries(${PROJECT_NAME} PRIVATE
+        Qt${QT_VERSION_MAJOR}::Widgets
+        Qt${QT_VERSION_MAJOR}::Multimedia
+        ${FASTDEPLOY_LIBS})
 
 
 
