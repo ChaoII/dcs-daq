@@ -7,6 +7,7 @@
 #include "acamerapro.h"
 #include "ocr/ppocrv4.h"
 #include <QThread>
+#include "opc/opc.h"
 
 namespace Ui {
     class MainWindow;
@@ -44,6 +45,10 @@ private slots:
 
     void on_item_changed(ARectItem *);
 
+    void on_update_image(const QImage &img);
+
+    void on_ocr_recognize();
+
     void on_rectangleTool_triggered();
 
     void on_clearTool_triggered();
@@ -60,9 +65,11 @@ private slots:
 
     void on_importTool_triggered();
 
-    void on_update_image(const QImage &img);
+    void on_action1_triggered();
 
-    void on_ocr_recognize();
+    void on_action2_triggered();
+
+    void on_action3_triggered();
 
 
 private:
@@ -72,7 +79,7 @@ private:
 
     QJsonArray image_label_to_json();
 
-    void load_outer_label(const QString&);
+    void load_outer_label(const QString &);
 
     void disable_all_rect_item();
 
@@ -91,5 +98,6 @@ private:
     QImage current_image_;
     QJsonArray json_array_;
     QTimer *timer = nullptr;
+    OPC *opc_ = nullptr;
 };
 

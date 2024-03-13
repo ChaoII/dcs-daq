@@ -11,6 +11,7 @@
 #include <QFile>
 #include <QImage>
 #include <opencv2/opencv.hpp>
+#include <QDebug>
 
 class Utils {
 public:

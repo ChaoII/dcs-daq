@@ -10,7 +10,7 @@ set(CMAKE_AUTOUIC ON)
 set(FD_DIRECTORY "E:/Fastdeploy/build/install" CACHE PATH "fastdeploy install directory")
 include(${FD_DIRECTORY}/FastDeploy.cmake)
 
-find_package(Qt6 COMPONENTS Widgets Multimedia REQUIRED)
+find_package(Qt6 COMPONENTS Widgets Multimedia OpcUa REQUIRED)
 
 set(PROJECT_SOURCE_DIR
         src/agraphicsview.cpp
@@ -36,6 +36,8 @@ set(PROJECT_SOURCE_DIR
         src/ocr/ppocrv4.cpp
         src/utils/utils.h
         src/utils/utils.cpp
+        src/opc/opc.h
+        src/opc/opc.cpp
         qrc.qrc
         main.cpp
 )
@@ -45,6 +47,7 @@ add_executable(${PROJECT_NAME} ${PROJECT_SOURCE_DIR})
 target_link_libraries(${PROJECT_NAME} PRIVATE
         Qt${QT_VERSION_MAJOR}::Widgets
         Qt${QT_VERSION_MAJOR}::Multimedia
+        Qt${QT_VERSION_MAJOR}::OpcUa
         ${FASTDEPLOY_LIBS})
 
 

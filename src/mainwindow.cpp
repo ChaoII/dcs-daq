@@ -46,11 +46,13 @@ MainWindow::MainWindow(QWidget *parent) :
         graphicsView_->update_background_image(img);
     });
 
+    opc_ = new OPC();
 
-    auto ocr_thread = new PPOCRV4("ch_PP-OCRv4_rec_infer", "dict.txt", false, 4);
+
+    auto ocr_thread = new PPOCRV4("model", "dict.txt", false, 4);
     ocr_thread->moveToThread(&ocr_thread_);
     connect(&ocr_thread_, &QThread::finished, ocr_thread, &PPOCRV4::deleteLater);
-    connect(this, &MainWindow::predict_signal, ocr_thread, &PPOCRV4::predict, Qt::BlockingQueuedConnection);
+    connect(this, &MainWindow::predict_signal, ocr_thread, &PPOCRV4::predict);
 
     connect(graphicsView_, &AGraphicsView::send_position_signal, this, &MainWindow::update_position_label);
     connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::on_draw_rect_finished);
@@ -170,12 +172,27 @@ void MainWindow::on_previewTool_triggered() {
 void MainWindow::on_saveTool_triggered() {
     json_array_ = image_label_to_json();
     Utils::write_json(json_array_, "label.json");
-    QMessageBox::information(this,"提示","文件[label.json]保存成功");
+    QMessageBox::information(this, "提示", "文件[label.json]保存成功");
 }
 
 void MainWindow::on_importTool_triggered() {
+    auto filename = QFileDialog::getOpenFileName(this, "标签导入", "./", "json(*.json)");
+    if (filename.isEmpty()) {
+        return;
+    }
+    auto json_array = Utils::read_json(filename);
+    if (json_array.isEmpty()) {
+        QMessageBox::warning(this, "警告", "文件格式不正确，请选择正确的label文件");
+        return;
+    } else {
+        auto obj = json_array[0].toObject();
+        if (obj.value("name").toString().isEmpty() || obj.value("box").toObject().isEmpty()) {
+            QMessageBox::warning(this, "警告", "文件格式不正确，请选择正确的label文件");
+            return;
+        }
+    }
     clear_label();
-    json_array_ = Utils::read_json("label.json");
+    json_array_ = json_array;
     for (auto object: json_array_) {
         auto id = object.toObject().value("name").toString();
         auto box = object.toObject().value("box").toObject();
@@ -277,6 +294,18 @@ void MainWindow::clear_label() {
     }
     items_map_.clear();
     item_list_->clear();
+}
+
+void MainWindow::on_action1_triggered() {
+    opc_->request_endpoints();
+}
+
+void MainWindow::on_action2_triggered() {
+    opc_->read_node();
+}
+
+void MainWindow::on_action3_triggered() {
+    opc_->write_attribute();
 }
 
 
