@@ -32,6 +32,8 @@ public:
 
     inline static int frame_height = 480;
 
+    inline static QString OPC_server_endpoint = "opc.tcp://127.0.0.1:49321";
+
     inline static QString OPC_prefix = "ns=2;s=DCSDAQ.PC1.";
 };
 

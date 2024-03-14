@@ -25,7 +25,6 @@ protected:
 
     void keyPressEvent(QKeyEvent *event) override;
 
-
 signals:
 
     void predict_signal(const cv::Mat &image, const QJsonArray &json_array);
@@ -38,19 +37,21 @@ private slots:
 
     void handle_ocr_recognition_finished(const QJsonArray &);
 
-    void on_draw_rect_finished(ARectItem *item, bool is_manual);
+    void handle_draw_rect_finished(ARectItem *item, bool is_manual);
 
-    void on_current_row_change(ARectListItem *table_item);
+    void handle_rect_list_select_row_change(ARectListItem *table_item);
 
-    void on_item_selected_changed();
+    void handle_rect_item_selected_changed();
 
-    void on_item_double_clicked(ARectListItem *item);
+    void handle_item_double_clicked(ARectListItem *item);
 
-    void on_item_changed(ARectItem *);
+    void handle_item_changed(ARectItem *);
 
-    void on_update_image(const QImage &img);
+    void handle_update_image(const QImage &img);
 
-    void on_ocr_recognize();
+    void handle_ocr_recognize();
+
+    void handle_receive_image(const QImage &);
 
     void on_rectangleTool_triggered();
 
@@ -74,13 +75,15 @@ private:
 
     void init_widget();
 
+    void update_rect_from_json_array(const QJsonArray& json_array);
+
+    void draw_rect_from_json_array(const QJsonArray& json_array);
+
     QJsonArray image_label_to_json();
 
-    void load_outer_label(const QString &);
+    void init_rect_from_outer_label(const QString &);
 
-    void disable_all_rect_item();
-
-    void enable_all_rect_item();
+    void set_all_rect_enable(bool status);
 
 private:
     Ui::MainWindow *ui;
@@ -94,7 +97,7 @@ private:
     QThread ocr_thread_;
     QImage current_image_;
     QJsonArray json_array_;
-    QTimer *timer = nullptr;
+    QTimer *timer_ = nullptr;
     OPC *opc_ = nullptr;
 };
 

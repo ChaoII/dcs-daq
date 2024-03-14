@@ -21,51 +21,41 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->statusBar->addWidget(status_view_cord_);
     ui->statusBar->addWidget(status_scene_cord_);
 
-    // 其它toolButton 的icon size 可以给出推荐尺寸
-    // int size = style()->pixelMetric(QStyle::PM_ToolBarIconSize);
-    // QSize icon_size(size, size);
-    // ui->toolBar->setIconSize(icon_size);
-
     auto action_group = new QActionGroup(this);
     action_group->addAction(ui->rectangleTool);
     action_group->addAction(ui->selectTool);
     action_group->addAction(ui->previewTool);
-
 
     auto *h_spliter = new QSplitter();
     h_spliter->setOrientation(Qt::Horizontal);
     this->centralWidget()->layout()->addWidget(h_spliter);
 
     item_list_ = new ARectList();
-
     h_spliter->addWidget(graphicsView_);
     h_spliter->addWidget(item_list_);
 
     image_pro_ = new ACameraPro(this);
-    connect(image_pro_, &ACameraPro::send_image_signal, this, [&](const QImage &img) {
-        graphicsView_->update_background_image(img);
-    });
-
+    connect(image_pro_, &ACameraPro::send_image_signal, this, &MainWindow::handle_receive_image);
     opc_ = new OPC();
 
-    auto ppocr_v4 = new PPOCRV4("model", "dict.txt", false, 4);
-    ppocr_v4->moveToThread(&ocr_thread_);
-    connect(ppocr_v4, &PPOCRV4::ocr_recognition_finished_signal, this, &MainWindow::handle_ocr_recognition_finished);
-    connect(&ocr_thread_, &QThread::finished, ppocr_v4, &PPOCRV4::deleteLater);
-    connect(this, &MainWindow::predict_signal, ppocr_v4, &PPOCRV4::predict);
+    auto ocr = new PPOCRV4("model", "dict.txt", false, 4);
+    ocr->moveToThread(&ocr_thread_);
+    connect(ocr, &PPOCRV4::ocr_recognition_finished_signal, this, &MainWindow::handle_ocr_recognition_finished);
+    connect(&ocr_thread_, &QThread::finished, ocr, &PPOCRV4::deleteLater);
+    connect(this, &MainWindow::predict_signal, ocr, &PPOCRV4::predict);
 
     connect(graphicsView_, &AGraphicsView::send_position_signal, this, &MainWindow::update_position_label);
-    connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::on_draw_rect_finished);
-    connect(graphicsView_, &AGraphicsView::item_selected_changed_signal, this, &MainWindow::on_item_selected_changed);
-    connect(graphicsView_, &AGraphicsView::item_changed_signal, this, &MainWindow::on_item_changed);
-    connect(graphicsView_, &AGraphicsView::update_image_signal, this, &MainWindow::on_update_image);
-    connect(item_list_, &ARectList::item_change_item, this, &MainWindow::on_current_row_change);
-    connect(item_list_, &ARectList::item_double_clicked_signal, this, &MainWindow::on_item_double_clicked);
+    connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::handle_draw_rect_finished);
+    connect(graphicsView_, &AGraphicsView::item_selected_changed_signal, this,
+            &MainWindow::handle_rect_item_selected_changed);
+    connect(graphicsView_, &AGraphicsView::item_changed_signal, this, &MainWindow::handle_item_changed);
+    connect(graphicsView_, &AGraphicsView::update_image_signal, this, &MainWindow::handle_update_image);
+    connect(item_list_, &ARectList::item_change_item, this, &MainWindow::handle_rect_list_select_row_change);
+    connect(item_list_, &ARectList::item_double_clicked_signal, this, &MainWindow::handle_item_double_clicked);
 
-    timer = new QTimer(this);
-    timer->setInterval(2000);
-    connect(timer, &QTimer::timeout, this, &MainWindow::on_ocr_recognize);
-
+    timer_ = new QTimer(this);
+    timer_->setInterval(2000);
+    connect(timer_, &QTimer::timeout, this, &MainWindow::handle_ocr_recognize);
     init_widget();
 }
 
@@ -89,25 +79,26 @@ void MainWindow::on_rectangleTool_triggered() {
 
 void MainWindow::on_selectTool_triggered() {
     graphicsView_->set_select_status();
+    set_all_rect_enable(true);
     ui->rectangleTool->setEnabled(true);
     ui->clearTool->setEnabled(true);
     ui->importTool->setEnabled(true);
     ui->saveTool->setEnabled(true);
     image_pro_->stop();
-    timer->stop();
+    timer_->stop();
     is_preview_ = false;
-    enable_all_rect_item();
+
 }
 
-void MainWindow::on_draw_rect_finished(ARectItem *item, bool is_manual) {
-    QString id = "";
+void MainWindow::handle_draw_rect_finished(ARectItem *item, bool is_manual) {
+    QString tag_id = "";
     if (is_manual) {
-        id = QInputDialog::getText(this, "请输入标签名称", "tag");
+        tag_id = QInputDialog::getText(this, "请输入标签名称", "tag_id:");
     } else {
-        id = item->get_id();
+        tag_id = item->get_id();
     }
-    auto list_item = item_list_->add_item(id, item->get_inner_rect());
-    item->set_tag_id(id);
+    auto list_item = item_list_->add_item(tag_id, item->get_inner_rect());
+    item->set_tag_id(tag_id);
     items_map_.insert(list_item, item);
     item_list_->re_set_order();
 }
@@ -128,9 +119,10 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
             }
         }
     }
+    QMainWindow::keyPressEvent(event);
 }
 
-void MainWindow::on_item_selected_changed() {
+void MainWindow::handle_rect_item_selected_changed() {
     QMap<ARectListItem *, ARectItem *>::iterator it;
     for (it = items_map_.begin(); it != items_map_.end(); it++) {
         if (it.value()->isSelected()) {
@@ -141,7 +133,7 @@ void MainWindow::on_item_selected_changed() {
     }
 }
 
-void MainWindow::on_current_row_change(ARectListItem *rect_list_item) {
+void MainWindow::handle_rect_list_select_row_change(ARectListItem *rect_list_item) {
     auto cur_item = items_map_[rect_list_item];
     if (cur_item) {
         cur_item->setSelected(rect_list_item->set_selected_status());
@@ -161,14 +153,14 @@ void MainWindow::on_scaleUpTool_triggered() {
 }
 
 void MainWindow::on_previewTool_triggered() {
+    timer_->start();
     image_pro_->start();
-    timer->start();
     graphicsView_->set_select_status();
     ui->rectangleTool->setEnabled(false);
     ui->clearTool->setEnabled(false);
     ui->importTool->setEnabled(false);
     ui->saveTool->setEnabled(false);
-    disable_all_rect_item();
+    set_all_rect_enable(false);
 }
 
 void MainWindow::on_saveTool_triggered() {
@@ -189,22 +181,14 @@ void MainWindow::on_importTool_triggered() {
         return;
     } else {
         auto obj = json_array[0].toObject();
-        if (obj.value("name").toString().isEmpty() || obj.value("box").toObject().isEmpty()) {
+        if (obj.value("tag_id").toString().isEmpty() || obj.value("box").toObject().isEmpty()) {
             QMessageBox::warning(this, "警告", "文件格式不正确，请选择正确的label文件");
             return;
         }
     }
     clear_label();
-    json_array_ = json_array;
-    for (auto object: json_array_) {
-        auto id = object.toObject().value("name").toString();
-        auto box = object.toObject().value("box").toObject();
-        auto x = box.value("x").toDouble();
-        auto y = box.value("y").toDouble();
-        auto w = box.value("w").toDouble();
-        auto h = box.value("h").toDouble();
-        graphicsView_->draw_real_rect(id, QRectF(x, y, w, h));
-    }
+    update_rect_from_json_array(json_array);
+
 }
 
 void MainWindow::init_widget() {
@@ -216,17 +200,17 @@ void MainWindow::init_widget() {
     ui->clearTool->setEnabled(false);
     ui->importTool->setEnabled(false);
     ui->saveTool->setEnabled(false);
-    timer->start();
     ocr_thread_.start();
+    timer_->start();
 
-    QTimer::singleShot(2000, [&]() {
-        load_outer_label("label.json");
-        disable_all_rect_item();
+    QTimer::singleShot(1500, [&]() {
+        init_rect_from_outer_label("label.json");
+        set_all_rect_enable(false);
         opc_->update_nodes(json_array_);
     });
 }
 
-void MainWindow::on_item_changed(ARectItem *item) {
+void MainWindow::handle_item_changed(ARectItem *item) {
     QMap<ARectListItem *, ARectItem *>::iterator it;
     for (it = items_map_.begin(); it != items_map_.end(); it++) {
         if (it.value()->get_id() == item->get_id()) {
@@ -236,7 +220,6 @@ void MainWindow::on_item_changed(ARectItem *item) {
 }
 
 QJsonArray MainWindow::image_label_to_json() {
-    // 弹出保存文件对话框
     QJsonArray arr_phone;
     QJsonObject obj_root, json_box;
     QMap<ARectListItem *, ARectItem *>::iterator it;
@@ -253,43 +236,24 @@ QJsonArray MainWindow::image_label_to_json() {
     return arr_phone;
 }
 
-void MainWindow::on_update_image(const QImage &img) {
+void MainWindow::handle_update_image(const QImage &img) {
     current_image_ = img;
 }
 
-void MainWindow::on_ocr_recognize() {
+void MainWindow::handle_ocr_recognize() {
     if (current_image_.isNull()) return;
     cv::Mat img = Utils::qImageToCvMat(current_image_);
     emit predict_signal(img, json_array_);
 }
 
-void MainWindow::disable_all_rect_item() {
-    QMap<ARectListItem *, ARectItem *>::iterator it;
-    for (it = items_map_.begin(); it != items_map_.end(); it++) {
-        it.value()->setEnabled(false);
-        it.key()->setEnabled(false);
-    }
+void MainWindow::set_all_rect_enable(bool status) {
+    item_list_->setEnabled(status);
+    graphicsView_->setEnabled(status);
 }
 
-void MainWindow::enable_all_rect_item() {
-    QMap<ARectListItem *, ARectItem *>::iterator it;
-    for (it = items_map_.begin(); it != items_map_.end(); it++) {
-        it.value()->setEnabled(true);
-        it.key()->setEnabled(true);
-    }
-}
-
-void MainWindow::load_outer_label(const QString &file_name) {
-    json_array_ = Utils::read_json(file_name);
-    for (auto object: json_array_) {
-        auto id = object.toObject().value("tag_id").toString();
-        auto box = object.toObject().value("box").toObject();
-        auto x = box.value("x").toDouble();
-        auto y = box.value("y").toDouble();
-        auto w = box.value("w").toDouble();
-        auto h = box.value("h").toDouble();
-        graphicsView_->draw_real_rect(id, QRectF(x, y, w, h));
-    }
+void MainWindow::init_rect_from_outer_label(const QString &file_name) {
+    auto json_array = Utils::read_json(file_name);
+    update_rect_from_json_array(json_array);
 }
 
 void MainWindow::clear_label() {
@@ -305,8 +269,11 @@ void MainWindow::handle_ocr_recognition_finished(const QJsonArray &ocr_result) {
     opc_->write_attribute(ocr_result);
 }
 
-void MainWindow::on_item_double_clicked(ARectListItem *item) {
-    auto tag_id = QInputDialog::getText(this, "请输入新的tag_id", "tag_id:");
+void MainWindow::handle_item_double_clicked(ARectListItem *item) {
+    auto tag_id = QInputDialog::getText(this,
+                                        "请输入新的tag_id",
+                                        "tag_id:",
+                                        QLineEdit::Normal, item->get_tag_id());
     if (!tag_id.isEmpty()) {
         auto rect_item = items_map_[item];
         if (rect_item) {
@@ -314,6 +281,27 @@ void MainWindow::on_item_double_clicked(ARectListItem *item) {
             rect_item->set_tag_id(tag_id);
         }
     }
+}
+
+void MainWindow::handle_receive_image(const QImage &image) {
+    graphicsView_->update_background_image(image);
+}
+
+void MainWindow::draw_rect_from_json_array(const QJsonArray &json_array) {
+    for (auto object: json_array) {
+        auto id = object.toObject().value("name").toString();
+        auto box = object.toObject().value("box").toObject();
+        auto x = box.value("x").toDouble();
+        auto y = box.value("y").toDouble();
+        auto w = box.value("w").toDouble();
+        auto h = box.value("h").toDouble();
+        graphicsView_->draw_real_rect(id, QRectF(x, y, w, h));
+    }
+}
+
+void MainWindow::update_rect_from_json_array(const QJsonArray &json_array) {
+    json_array_ = json_array;
+    draw_rect_from_json_array(json_array_);
 }
 
 

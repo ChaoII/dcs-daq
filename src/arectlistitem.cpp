@@ -74,4 +74,8 @@ void ARectListItem::set_tag_id(const QString &tag_id) {
     ui->lb_itemName->setText(tag_id);
 }
 
+QString ARectListItem::get_tag_id() {
+    return ui->lb_itemName->text();
+}
+
 

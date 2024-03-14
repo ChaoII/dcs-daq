@@ -25,6 +25,8 @@ public:
 
     void set_tag_id(const QString &tag_id);
 
+    QString get_tag_id();
+
     QLabel *get_order_label();
 
     void set_selected(bool status);
