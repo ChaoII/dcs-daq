@@ -18,8 +18,8 @@ ARectListItem::~ARectListItem() {
     delete ui;
 }
 
-void ARectListItem::mousePressEvent(QMouseEvent *event) {
 
+void ARectListItem::mousePressEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton) {
         if (!(QApplication::keyboardModifiers() & Qt::ControlModifier)) {
             emit clicked_signal();
@@ -27,7 +27,13 @@ void ARectListItem::mousePressEvent(QMouseEvent *event) {
     }
     set_selected(!selected_status_);
     // 注意，拦截事件
-    // QWidget::mousePressEvent(event);
+//     QWidget::mousePressEvent(event);
+}
+
+void ARectListItem::mouseDoubleClickEvent(QMouseEvent *event) {
+    if (event->button() == Qt::LeftButton) {
+        emit double_clicked_signal();
+    }
 }
 
 void ARectListItem::set_selected(bool status) {
@@ -63,3 +69,9 @@ void ARectListItem::update_rect(const QRectF &rect) {
     ui->lb_width->setText(QString::number(rect.width()));
     ui->lb_height->setText(QString::number(rect.height()));
 }
+
+void ARectListItem::set_tag_id(const QString &tag_id) {
+    ui->lb_itemName->setText(tag_id);
+}
+
+

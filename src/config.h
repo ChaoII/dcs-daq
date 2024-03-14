@@ -31,5 +31,7 @@ public:
     inline static int frame_width = 640;
 
     inline static int frame_height = 480;
+
+    inline static QString OPC_prefix = "ns=2;s=DCSDAQ.PC1.";
 };
 

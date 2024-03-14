@@ -33,9 +33,13 @@ signals:
 
     void item_change_item(ARectListItem *);
 
+    void item_double_clicked_signal(ARectListItem *);
+
 private slots:
 
     void on_receive_item_selected();
+
+    void on_double_clicked();
 
     void on_item_row_changed();
 

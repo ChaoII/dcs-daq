@@ -20,12 +20,15 @@ public:
 
 ~PPOCRV4();
 
+signals:
+    void ocr_recognition_finished_signal(const QJsonArray&);
+
 public slots:
 
     void predict(const cv::Mat &image, const QJsonArray &json_array);
 
 private:
-    void ocr_result_to_json(const QString &data_id, const OCRResult &result, QJsonArray &root);
+    void ocr_result_to_json(const QString &tag_id, const OCRResult &result, QJsonArray &root);
 
 private:
     OCRRecognitionModel *model = nullptr;

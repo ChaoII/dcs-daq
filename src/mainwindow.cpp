@@ -48,11 +48,11 @@ MainWindow::MainWindow(QWidget *parent) :
 
     opc_ = new OPC();
 
-
-    auto ocr_thread = new PPOCRV4("model", "dict.txt", false, 4);
-    ocr_thread->moveToThread(&ocr_thread_);
-    connect(&ocr_thread_, &QThread::finished, ocr_thread, &PPOCRV4::deleteLater);
-    connect(this, &MainWindow::predict_signal, ocr_thread, &PPOCRV4::predict);
+    auto ppocr_v4 = new PPOCRV4("model", "dict.txt", false, 4);
+    ppocr_v4->moveToThread(&ocr_thread_);
+    connect(ppocr_v4, &PPOCRV4::ocr_recognition_finished_signal, this, &MainWindow::handle_ocr_recognition_finished);
+    connect(&ocr_thread_, &QThread::finished, ppocr_v4, &PPOCRV4::deleteLater);
+    connect(this, &MainWindow::predict_signal, ppocr_v4, &PPOCRV4::predict);
 
     connect(graphicsView_, &AGraphicsView::send_position_signal, this, &MainWindow::update_position_label);
     connect(graphicsView_, &AGraphicsView::send_draw_final_signal, this, &MainWindow::on_draw_rect_finished);
@@ -60,6 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(graphicsView_, &AGraphicsView::item_changed_signal, this, &MainWindow::on_item_changed);
     connect(graphicsView_, &AGraphicsView::update_image_signal, this, &MainWindow::on_update_image);
     connect(item_list_, &ARectList::item_change_item, this, &MainWindow::on_current_row_change);
+    connect(item_list_, &ARectList::item_double_clicked_signal, this, &MainWindow::on_item_double_clicked);
 
     timer = new QTimer(this);
     timer->setInterval(2000);
@@ -98,8 +99,15 @@ void MainWindow::on_selectTool_triggered() {
     enable_all_rect_item();
 }
 
-void MainWindow::on_draw_rect_finished(ARectItem *item) {
-    auto list_item = item_list_->add_item(item->get_id(), item->get_inner_rect());
+void MainWindow::on_draw_rect_finished(ARectItem *item, bool is_manual) {
+    QString id = "";
+    if (is_manual) {
+        id = QInputDialog::getText(this, "请输入标签名称", "tag");
+    } else {
+        id = item->get_id();
+    }
+    auto list_item = item_list_->add_item(id, item->get_inner_rect());
+    item->set_tag_id(id);
     items_map_.insert(list_item, item);
     item_list_->re_set_order();
 }
@@ -122,7 +130,6 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
     }
 }
 
-
 void MainWindow::on_item_selected_changed() {
     QMap<ARectListItem *, ARectItem *>::iterator it;
     for (it = items_map_.begin(); it != items_map_.end(); it++) {
@@ -143,11 +150,6 @@ void MainWindow::on_current_row_change(ARectListItem *rect_list_item) {
 
 void MainWindow::on_clearTool_triggered() {
     clear_label();
-}
-
-bool MainWindow::eventFilter(QObject *watched, QEvent *e) {
-
-    return QObject::eventFilter(watched, e);
 }
 
 void MainWindow::on_scaleDownTool_triggered() {
@@ -173,6 +175,7 @@ void MainWindow::on_saveTool_triggered() {
     json_array_ = image_label_to_json();
     Utils::write_json(json_array_, "label.json");
     QMessageBox::information(this, "提示", "文件[label.json]保存成功");
+    opc_->update_nodes(json_array_);
 }
 
 void MainWindow::on_importTool_triggered() {
@@ -219,6 +222,7 @@ void MainWindow::init_widget() {
     QTimer::singleShot(2000, [&]() {
         load_outer_label("label.json");
         disable_all_rect_item();
+        opc_->update_nodes(json_array_);
     });
 }
 
@@ -238,7 +242,7 @@ QJsonArray MainWindow::image_label_to_json() {
     QMap<ARectListItem *, ARectItem *>::iterator it;
     for (it = items_map_.begin(); it != items_map_.end(); it++) {
         auto rect = it.value()->get_inner_rect();
-        obj_root["name"] = it.value()->get_id();
+        obj_root["tag_id"] = it.value()->get_tag_id();
         json_box["x"] = rect.x();
         json_box["y"] = rect.y();
         json_box["w"] = rect.width();
@@ -278,7 +282,7 @@ void MainWindow::enable_all_rect_item() {
 void MainWindow::load_outer_label(const QString &file_name) {
     json_array_ = Utils::read_json(file_name);
     for (auto object: json_array_) {
-        auto id = object.toObject().value("name").toString();
+        auto id = object.toObject().value("tag_id").toString();
         auto box = object.toObject().value("box").toObject();
         auto x = box.value("x").toDouble();
         auto y = box.value("y").toDouble();
@@ -296,16 +300,20 @@ void MainWindow::clear_label() {
     item_list_->clear();
 }
 
-void MainWindow::on_action1_triggered() {
-    opc_->request_endpoints();
+
+void MainWindow::handle_ocr_recognition_finished(const QJsonArray &ocr_result) {
+    opc_->write_attribute(ocr_result);
 }
 
-void MainWindow::on_action2_triggered() {
-    opc_->read_node();
-}
-
-void MainWindow::on_action3_triggered() {
-    opc_->write_attribute();
+void MainWindow::on_item_double_clicked(ARectListItem *item) {
+    auto tag_id = QInputDialog::getText(this, "请输入新的tag_id", "tag_id:");
+    if (!tag_id.isEmpty()) {
+        auto rect_item = items_map_[item];
+        if (rect_item) {
+            item->set_tag_id(tag_id);
+            rect_item->set_tag_id(tag_id);
+        }
+    }
 }
 
 

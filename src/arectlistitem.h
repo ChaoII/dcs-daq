@@ -23,6 +23,8 @@ public:
 
     void set_item(const QString &name, const QRectF &rect);
 
+    void set_tag_id(const QString &tag_id);
+
     QLabel *get_order_label();
 
     void set_selected(bool status);
@@ -35,9 +37,13 @@ protected:
 
     void mousePressEvent(QMouseEvent *event) override;
 
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
+
 signals:
 
     void clicked_signal();
+
+    void double_clicked_signal();
 
     void selected_status_change_signal();
 

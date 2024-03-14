@@ -30,7 +30,7 @@ void PPOCRV4::predict(const cv::Mat &image, const QJsonArray &json_array) {
     QJsonArray results;
     auto start_time = std::chrono::steady_clock::now();
     for (const auto &json_object: json_array) {
-        auto name = json_object.toObject().value("name").toString();
+        auto name = json_object.toObject().value("tag_id").toString();
         auto box = json_object.toObject().value("box").toObject();
         double x = box["x"].toDouble();
         double y = box["y"].toDouble();
@@ -50,16 +50,21 @@ void PPOCRV4::predict(const cv::Mat &image, const QJsonArray &json_array) {
         ocr_result_to_json(name, result, results);
     }
     Utils::write_json(results, "result.json");
+    emit ocr_recognition_finished_signal(results);
     auto end_time = std::chrono::steady_clock::now();
     auto elapsed = end_time - start_time;
     qDebug() << "recognition finished, elapsed: "
              << std::chrono::duration_cast<std::chrono::milliseconds>(elapsed).count();
 }
 
-void PPOCRV4::ocr_result_to_json(const QString &data_id, const OCRResult &result, QJsonArray &root) {
+void PPOCRV4::ocr_result_to_json(const QString &tag_id, const OCRResult &result, QJsonArray &root) {
     QJsonObject json_result;
-    json_result["id"] = data_id;
-    json_result["text"] = QString::fromStdString(result.text[0]);
+    json_result["tag_id"] = tag_id;
+    auto tag_value = 0.0;
+    if (result.rec_scores[0] > 0.5f) {
+        tag_value = QString::fromStdString(result.text[0]).toDouble();
+    }
+    json_result["text"] = tag_value;
     json_result["score"] = QString::number(result.rec_scores[0]);
     root.append(json_result);
 }

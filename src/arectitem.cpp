@@ -29,15 +29,17 @@ ARectItem::ARectItem(const QString &id, const QRectF &rect) :
 
     this->bottom_left_angle_ = -1.0 * this->top_left_angle_;
 
+    tag_id_ = id_;
+
     update_item();
 }
 
-void ARectItem::set_name(const QString &name) {
-    name_ = name;
+void ARectItem::set_tag_id(const QString &name) {
+    tag_id_ = name;
 }
 
-QString ARectItem::get_name() {
-    return name_;
+QString ARectItem::get_tag_id() {
+    return tag_id_;
 }
 
 QString ARectItem::get_id() {

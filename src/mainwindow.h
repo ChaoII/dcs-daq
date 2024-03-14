@@ -25,7 +25,6 @@ protected:
 
     void keyPressEvent(QKeyEvent *event) override;
 
-    bool eventFilter(QObject *watched, QEvent *e) override;
 
 signals:
 
@@ -37,11 +36,15 @@ public slots:
 
 private slots:
 
-    void on_draw_rect_finished(ARectItem *item);
+    void handle_ocr_recognition_finished(const QJsonArray &);
+
+    void on_draw_rect_finished(ARectItem *item, bool is_manual);
 
     void on_current_row_change(ARectListItem *table_item);
 
     void on_item_selected_changed();
+
+    void on_item_double_clicked(ARectListItem *item);
 
     void on_item_changed(ARectItem *);
 
@@ -64,12 +67,6 @@ private slots:
     void on_saveTool_triggered();
 
     void on_importTool_triggered();
-
-    void on_action1_triggered();
-
-    void on_action2_triggered();
-
-    void on_action3_triggered();
 
 
 private:

@@ -47,7 +47,7 @@ public:
 
     void update_background_image(const QImage &img);
 
-    void draw_real_rect(const QString &id, const QRectF &rect);
+    void draw_real_rect(const QString &id, const QRectF &rect, bool is_manual = false);
 
 private:
     void center_scene();
@@ -78,7 +78,7 @@ signals:
 
     void send_position_signal(const QPoint &, const QPoint &);
 
-    void send_draw_final_signal(ARectItem *);
+    void send_draw_final_signal(ARectItem *, bool);
 
     void item_selected_changed_signal();
 
@@ -91,7 +91,6 @@ private slots:
     void on_mouse_is_enter_item(bool is_hover);
 
     void on_item_changed();
-
 
 
 private:

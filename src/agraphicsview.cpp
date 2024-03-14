@@ -76,7 +76,7 @@ void AGraphicsView::mouseReleaseEvent(QMouseEvent *event) {
     if (event->button() == Qt::LeftButton && draw_rect_checked_ && can_draw_) {
         draw_real_rect(QUuid::createUuid().toString(),
                        QRectF(this->mapToScene(last_point_),
-                              this->mapToScene(event->pos())));
+                              this->mapToScene(event->pos())), true);
     }
     QGraphicsView::mouseReleaseEvent(event);
 }
@@ -330,14 +330,16 @@ void AGraphicsView::on_item_changed() {
     }
 }
 
-void AGraphicsView::draw_real_rect(const QString &id, const QRectF &rect) {
+void AGraphicsView::draw_real_rect(const QString &id, const QRectF &rect, bool is_manual) {
     temp_canvas_->clear();
     auto rect_item = new ARectItem(id, rect);
     connect(rect_item, &ARectItem::mouse_hover_signal, this, &AGraphicsView::on_mouse_is_enter_item);
     connect(rect_item, &ARectItem::item_changed_signal, this, &AGraphicsView::on_item_changed);
     rect_item->set_color(box_color_);
     this->scene()->addItem(rect_item);
-    emit send_draw_final_signal(rect_item);
+
+    emit send_draw_final_signal(rect_item, is_manual);
+
 }
 
 

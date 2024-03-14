@@ -17,6 +17,7 @@ ARectListItem *ARectList::add_item(const QString &name, const QRectF &rect) {
     auto rect_list_item = new ARectListItem();
     rect_list_item->set_item(name, rect);
     connect(rect_list_item, &ARectListItem::clicked_signal, this, &ARectList::on_receive_item_selected);
+    connect(rect_list_item, &ARectListItem::double_clicked_signal, this, &ARectList::on_double_clicked);
     connect(rect_list_item, &ARectListItem::selected_status_change_signal, this, &ARectList::on_item_row_changed);
     ui->scrollAreaInterLayout->addWidget(rect_list_item);
     return rect_list_item;
@@ -63,6 +64,13 @@ void ARectList::on_item_row_changed() {
     auto rect_list_item = dynamic_cast<ARectListItem *>(sender());
     if (rect_list_item) {
         emit item_change_item(rect_list_item);
+    }
+}
+
+void ARectList::on_double_clicked() {
+    auto item = dynamic_cast<ARectListItem *>(sender());
+    if (item) {
+        emit item_double_clicked_signal(item);
     }
 }
 
