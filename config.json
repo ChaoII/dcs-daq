@@ -22,7 +22,7 @@
         0
     ],
     "border_grid_step": 150,
-    "frame": {
+    "frame_size": {
         "width": 640,
         "height": 480
     },
