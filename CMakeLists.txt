@@ -39,6 +39,8 @@ set(PROJECT_SOURCE_DIR
         src/ocr/ppocrv4.cpp
         src/utils/utils.h
         src/utils/utils.cpp
+        src/utils/config.h
+        src/utils/config.cpp
         src/opc/opc.h
         src/opc/opc.cpp
         qrc.qrc

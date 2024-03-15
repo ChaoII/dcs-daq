@@ -7,16 +7,16 @@
 AGraphicsView::AGraphicsView(QWidget *parent) :
         QGraphicsView(parent),
         ui(new Ui::AGraphicsView),
-        scale_range_({Config::scale_range_min, Config::scale_range_max}),
-        default_scene_size_(Config::default_scene_size),
+        scale_range_({Config::Instance().scale_range.min, Config::Instance().scale_range.max}),
+        default_scene_size_(Config::Instance().default_scene_size),
         box_color_(QColor(QRandomGenerator::global()->bounded(256),
                           QRandomGenerator::global()->bounded(256),
                           QRandomGenerator::global()->bounded(256))) {
     ui->setupUi(this);
     this->setScene(new QGraphicsScene());
     setSceneRect(0, 0,
-                 Config::default_scene_size,
-                 Config::default_scene_size);
+                 Config::Instance().default_scene_size,
+                 Config::Instance().default_scene_size);
     this->setMouseTracking(true);
     temp_canvas_ = new TempGraphicsItem(QSize(default_scene_size_, default_scene_size_));
     this->scene()->addItem(temp_canvas_);
@@ -27,7 +27,7 @@ AGraphicsView::AGraphicsView(QWidget *parent) :
     this->scene()->addItem(cross_item_);
 
     this->setCacheMode(QGraphicsView::CacheBackground);
-    this->setBackgroundBrush(Config::view_bg_color);
+    this->setBackgroundBrush(Config::Instance().view_bg_color);
     this->setRenderHint(QPainter::Antialiasing);
     this->setDragMode(QGraphicsView::RubberBandDrag);
     this->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
@@ -158,7 +158,7 @@ void AGraphicsView::setup_scale(double scale) {
 }
 
 void AGraphicsView::scale_down() {
-    double const factor = std::pow(Config::scale_step, -1.0);
+    double const factor = std::pow(Config::Instance().scale_step, -1.0);
     if (scale_range_.minimum > 0) {
         QTransform t = transform();
         t.scale(factor, factor);
@@ -172,7 +172,7 @@ void AGraphicsView::scale_down() {
 }
 
 void AGraphicsView::scale_up() {
-    double const factor = std::pow(Config::scale_step, 1.0);
+    double const factor = std::pow(Config::Instance().scale_step, 1.0);
     if (scale_range_.maximum > 0) {
         QTransform t = transform();
         t.scale(factor, factor);
@@ -219,13 +219,13 @@ void AGraphicsView::drawBackground(QPainter *painter, const QRectF &r) {
         }
     };
 
-    QPen pen1(Config::view_inter_line_color, 1.0);
+    QPen pen1(Config::Instance().view_inter_line_color, 1.0);
     painter->setPen(pen1);
-    draw_grid(Config::inter_grid_step);
+    draw_grid(Config::Instance().inter_grid_step);
 
-    QPen pen(Config::view_border_line_color, 1.0);
+    QPen pen(Config::Instance().view_border_line_color, 1.0);
     painter->setPen(pen);
-    draw_grid(Config::border_grid_step);
+    draw_grid(Config::Instance().border_grid_step);
 }
 
 void AGraphicsView::keyPressEvent(QKeyEvent *event) {

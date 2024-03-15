@@ -15,7 +15,7 @@ void Utils::write_json(const QJsonArray &json_array, const QString &json_file) {
     }
 }
 
-QJsonArray Utils::read_json(const QString &json_file) {
+QJsonArray Utils::read_json_array(const QString &json_file) {
     QFile file(json_file);
     QByteArray json_data;
     if (!file.open(QIODevice::ReadOnly)) {
@@ -28,6 +28,21 @@ QJsonArray Utils::read_json(const QString &json_file) {
         return QJsonArray();
     }
     return json_doc.array();
+}
+
+QJsonObject Utils::read_json_object(const QString &json_file) {
+    QFile file(json_file);
+    QByteArray json_data;
+    if (!file.open(QIODevice::ReadOnly)) {
+        return QJsonObject();
+    }
+    json_data = file.readAll();
+    file.close();
+    QJsonDocument json_doc = QJsonDocument::fromJson(json_data);
+    if (!json_doc.isObject()) {
+        return QJsonObject();
+    }
+    return json_doc.object();
 }
 
 QImage Utils::cvMat2QImage(const cv::Mat &img) {

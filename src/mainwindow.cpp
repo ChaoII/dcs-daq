@@ -201,7 +201,7 @@ void MainWindow::on_importTool_triggered() {
     if (filename.isEmpty()) {
         return;
     }
-    auto json_array = Utils::read_json(filename);
+    auto json_array = Utils::read_json_array(filename);
     if (json_array.isEmpty()) {
         QMessageBox::warning(this, "警告", "文件格式不正确，请选择正确的label文件");
         return;
@@ -224,7 +224,8 @@ void MainWindow::on_fullscreenTool_triggered() {
 }
 
 void MainWindow::init_widget() {
-    graphicsView_->add_image_item(QPixmap(QSize(Config::frame_width, Config::frame_height)));
+    graphicsView_->add_image_item(
+            QPixmap(QSize(Config::Instance().frame_size.width, Config::Instance().frame_size.height)));
     on_previewTool_triggered();
     QTimer::singleShot(1500, [&]() {
         init_rect_from_outer_label("label.json");
@@ -273,7 +274,7 @@ void MainWindow::set_all_rect_enable(bool status) {
 }
 
 void MainWindow::init_rect_from_outer_label(const QString &file_name) {
-    auto json_array = Utils::read_json(file_name);
+    auto json_array = Utils::read_json_array(file_name);
     update_rect_from_json_array(json_array);
 }
 
@@ -356,8 +357,8 @@ void MainWindow::show_normal() {
 
 void MainWindow::get_scale_ratio() {
     auto screen = QApplication::primaryScreen()->size();
-    auto rate_w = (double) screen.width() / Config::frame_width;
-    auto rate_h = (double) screen.height() / Config::frame_height;
+    auto rate_w = (double) screen.width() / Config::Instance().frame_size.width;
+    auto rate_h = (double) screen.height() / Config::Instance().frame_size.height;
     scale_ratio_ = rate_w < rate_h ? rate_w : rate_h;
 }
 

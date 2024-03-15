@@ -8,7 +8,7 @@
 #include "tempgraphicsitem.h"
 #include "crossitem.h"
 #include "arectitem.h"
-#include "config.h"
+#include "utils/config.h"
 
 namespace Ui {
     class AGraphicsView;

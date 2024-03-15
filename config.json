@@ -1,0 +1,31 @@
+{
+    "scale_range": {
+        "min": 0.3,
+        "max": 4.0
+    },
+    "default_scene_size": 1000,
+    "scale_step": 1.1,
+    "view_bg_color": [
+        53,
+        53,
+        53
+    ],
+    "view_inter_line_color": [
+        60,
+        60,
+        60
+    ],
+    "inter_grid_step": 15,
+    "view_border_line_color": [
+        0,
+        0,
+        0
+    ],
+    "border_grid_step": 150,
+    "frame": {
+        "width": 640,
+        "height": 480
+    },
+    "OPC_server_endpoint": "opc.tcp://127.0.0.1:49320",
+    "OPC_prefix": "ns=2;s=DCSDAQ.PC1."
+}

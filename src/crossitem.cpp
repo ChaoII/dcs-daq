@@ -1,12 +1,12 @@
 #include "crossitem.h"
-#include "config.h"
+#include "utils/config.h"
 
 CrossItem::CrossItem() {
 
 }
 
 QRectF CrossItem::boundingRect() const {
-    return QRect(0, 0, Config::default_scene_size, Config::default_scene_size);
+    return QRect(0, 0, Config::Instance().default_scene_size, Config::Instance().default_scene_size);
 }
 
 void CrossItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget) {

@@ -17,7 +17,10 @@ class Utils {
 public:
     static void write_json(const QJsonArray &json_array, const QString &json_file);
 
-    static QJsonArray read_json(const QString &json_file);
+    static QJsonArray read_json_array(const QString &json_file);
+
+    static QJsonObject read_json_object(const QString &json_file);
+
 
     static QImage cvMat2QImage(const cv::Mat &img);
 

@@ -3,13 +3,13 @@
 //
 
 #include "opc/opc.h"
-#include "config.h"
+#include "utils/config.h"
 #include "utils/utils.h"
 
 OPC::OPC() {
     provider_ = new QOpcUaProvider(this);
     client_ = provider_->createClient(QString("open62541"));
-     client_->requestEndpoints(QUrl(Config::OPC_server_endpoint));
+     client_->requestEndpoints(QUrl(Config::Instance().OPC_server_endpoint));
     connect(client_, &QOpcUaClient::endpointsRequestFinished, this, &OPC::on_endpoints_request_finished);
     connect(client_, &QOpcUaClient::stateChanged, this, &OPC::on_state_changed);
 }
@@ -26,7 +26,7 @@ void OPC::on_state_changed(QOpcUaClient::ClientState state) {
         qDebug() << "connect successful";
     } else if (state == QOpcUaClient::ClientState::Disconnected) {
         qDebug() << "connect failed, try to reconnect";
-        client_->requestEndpoints(QUrl(Config::OPC_server_endpoint));
+        client_->requestEndpoints(QUrl(Config::Instance().OPC_server_endpoint));
     }
 }
 
@@ -49,7 +49,7 @@ void OPC::update_nodes(const QJsonArray &json_array) {
     if (client_->state() == QOpcUaClient::ClientState::Connected) {
         for (auto &json: json_array) {
             auto node_id = json.toObject().value("tag_id").toString();
-            auto node = client_->node(Config::OPC_prefix + node_id);
+            auto node = client_->node(Config::Instance().OPC_prefix + node_id);
             node_map_[node_id] = node;
         }
     }
