@@ -21,19 +21,21 @@ public:
 
     ~ARectListItem() override;
 
-    void set_item(const QString &name, const QRectF &rect);
+    void set_item(const QString &name, const QString &tag_nam = "");
 
     void set_tag_id(const QString &tag_id);
 
+    void set_tag_name(const QString &tag_name);
+
     QString get_tag_id();
+
+    QString get_tag_name();
 
     QLabel *get_order_label();
 
     void set_selected(bool status);
 
-    bool set_selected_status();
-
-    void update_rect(const QRectF &rect);
+    bool get_selected_status();
 
 protected:
 
@@ -56,6 +58,7 @@ private:
     Ui::ARectListItem *ui;
 
     bool selected_status_ = false;
+
 };
 
 

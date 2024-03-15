@@ -1,18 +1,23 @@
 /*arectlistitem.cpp*/
-#lb_itemName {
-    border-width: 0px 0px 1px 0px;
+
+#lb_x, #lb_y, #lb_w, #lb_h, #lb_xl, #lb_yl, #lb_wl, #lb_hl {
+    border-width: 0px 0px 1px 1px;
     border-style: solid;
-    border-color: rgb(200, 200, 200)
+    border-color: rgb(100, 100, 100)
+}
+#lb_h, #lb_hl{
+    border-right: 1px;
+    border-style: solid;
+    border-color: rgb(100, 100, 100)
 }
 
-#lb_order, #lb_x, #lb_y, #lb_width {
+#lb_order, #lb_tag_id, #lb_tag_name {
     border-width: 0px 1px 0px 0px;
     border-style: solid;
     border-color: rgb(200, 200, 200)
 }
 
 #lb_order {
-    font-size: 20px;
     color: rgb(255, 0, 0);
 }
 

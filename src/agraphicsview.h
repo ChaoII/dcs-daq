@@ -47,7 +47,7 @@ public:
 
     void update_background_image(const QImage &img);
 
-    void draw_real_rect(const QString &id, const QRectF &rect, bool is_manual = false);
+    void draw_real_rect(const QString &id, const QString &tag_name, const QRectF &rect, bool is_manual = false);
 
 private:
     void center_scene();

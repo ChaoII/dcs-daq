@@ -75,9 +75,9 @@ private:
 
     void init_widget();
 
-    void update_rect_from_json_array(const QJsonArray& json_array);
+    void update_rect_from_json_array(const QJsonArray &json_array);
 
-    void draw_rect_from_json_array(const QJsonArray& json_array);
+    void draw_rect_from_json_array(const QJsonArray &json_array);
 
     QJsonArray image_label_to_json();
 
@@ -91,7 +91,7 @@ private:
     QLabel *status_scene_cord_ = nullptr;
     ARectList *item_list_ = nullptr;
     AGraphicsView *graphicsView_ = nullptr;
-    QMap<ARectListItem *, ARectItem *> items_map_;
+    QList<QPair<ARectListItem *, ARectItem *>> items_;
     ACameraPro *image_pro_ = nullptr;
     bool is_preview_ = false;
     QThread ocr_thread_;

@@ -32,6 +32,9 @@ set(PROJECT_SOURCE_DIR
         src/arectlistitem.h
         src/arectlistitem.cpp
         src/arectlistitem.ui
+        src/ataginputdialog.h
+        src/ataginputdialog.cpp
+        src/ataginputdialog.ui
         src/ocr/ppocrv4.h
         src/ocr/ppocrv4.cpp
         src/utils/utils.h

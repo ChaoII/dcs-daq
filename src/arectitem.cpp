@@ -5,11 +5,13 @@
 #include "arectitem.h"
 #include <QUuid>
 #include <QVector2D>
+#include <utility>
 
-ARectItem::ARectItem(const QString &id, const QRectF &rect) :
+ARectItem::ARectItem(QString tag_id, QString tag_name, const QRectF &rect) :
         rect_(rect),
         color_(Qt::red),
-        id_(id) {
+        tag_id_(std::move(tag_id)),
+        tag_name_(std::move(tag_name)) {
     this->setFlags(QGraphicsItem::ItemIsSelectable | QGraphicsItem::ItemIsFocusable);
     this->setCacheMode(QGraphicsItem::NoCache);
     this->item_ratio_ = rect.width() / rect.height();
@@ -29,7 +31,7 @@ ARectItem::ARectItem(const QString &id, const QRectF &rect) :
 
     this->bottom_left_angle_ = -1.0 * this->top_left_angle_;
 
-    tag_id_ = id_;
+    id_ = tag_id_;
 
     update_item();
 }
@@ -326,6 +328,15 @@ void ARectItem::move_by(const QPointF &point) {
                    QSizeF(rect_.width(), rect_.height()));
     left_top_ = rect_.topLeft();
     update_item();
+}
+
+void ARectItem::set_tag_name(const QString &tag_name) {
+
+    tag_name_ = tag_name;
+}
+
+QString ARectItem::get_tag_name() {
+    return tag_name_;
 }
 
 

@@ -36,15 +36,23 @@ class ARectItem : public QGraphicsObject {
 
 Q_OBJECT
 public:
-    explicit ARectItem(const QString &id, const QRectF &rect);
+    explicit ARectItem(QString tag_id,QString  tag_name, const QRectF &rect);
+
+    /// 设置item tag_id
+    /// \param name item tag_id
+    void set_tag_id(const QString &tag_id);
+
+    /// 获取item tag_id
+    /// \return
+    QString get_tag_id();
 
     /// 设置item名称
     /// \param name item名称
-    void set_tag_id(const QString &name);
+    void set_tag_name(const QString &name);
 
     /// 获取item名称
     /// \return
-    QString get_tag_id();
+    QString get_tag_name();
 
     /// 获取item的id
     /// \return
@@ -101,8 +109,10 @@ private:
     QColor color_;
     /// 矩形框范围
     QRectF rect_;
-    /// item 名称
+    /// item id
     QString tag_id_;
+    /// item 名称
+    QString tag_name_;
     /// item id
     QString id_;
     /// item 选中时外边界虚线框

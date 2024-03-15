@@ -13,9 +13,9 @@ ARectList::~ARectList() {
 
 }
 
-ARectListItem *ARectList::add_item(const QString &name, const QRectF &rect) {
+ARectListItem *ARectList::add_item(const QString &tag_id, const QString &tag_name) {
     auto rect_list_item = new ARectListItem();
-    rect_list_item->set_item(name, rect);
+    rect_list_item->set_item(tag_id, tag_name);
     connect(rect_list_item, &ARectListItem::clicked_signal, this, &ARectList::on_receive_item_selected);
     connect(rect_list_item, &ARectListItem::double_clicked_signal, this, &ARectList::on_double_clicked);
     connect(rect_list_item, &ARectListItem::selected_status_change_signal, this, &ARectList::on_item_row_changed);
@@ -49,6 +49,10 @@ void ARectList::clear_item_selected() {
             rect_list_item->set_selected(false);
         }
     }
+    ui->lb_x->setText(QString::number(0));
+    ui->lb_y->setText(QString::number(0));
+    ui->lb_w->setText(QString::number(0));
+    ui->lb_h->setText(QString::number(0));
 }
 
 void ARectList::mousePressEvent(QMouseEvent *event) {
@@ -72,6 +76,36 @@ void ARectList::on_double_clicked() {
     if (item) {
         emit item_double_clicked_signal(item);
     }
+}
+
+void ARectList::update_rect_coordinate(const QRectF &rect) {
+    ui->lb_x->setText(QString::number(rect.x()));
+    ui->lb_y->setText(QString::number(rect.y()));
+    ui->lb_w->setText(QString::number(rect.width()));
+    ui->lb_h->setText(QString::number(rect.height()));
+    update();
+}
+
+void ARectList::hide_coordinate() {
+    ui->lb_x->setVisible(false);
+    ui->lb_y->setVisible(false);
+    ui->lb_w->setVisible(false);
+    ui->lb_h->setVisible(false);
+    ui->lb_xl->setVisible(false);
+    ui->lb_yl->setVisible(false);
+    ui->lb_wl->setVisible(false);
+    ui->lb_hl->setVisible(false);
+}
+
+void ARectList::show_coordinate() {
+    ui->lb_x->setVisible(true);
+    ui->lb_y->setVisible(true);
+    ui->lb_w->setVisible(true);
+    ui->lb_h->setVisible(true);
+    ui->lb_xl->setVisible(true);
+    ui->lb_yl->setVisible(true);
+    ui->lb_wl->setVisible(true);
+    ui->lb_hl->setVisible(true);
 }
 
 

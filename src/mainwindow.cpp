@@ -5,7 +5,7 @@
 #include <QMessageBox>
 #include <QSplitter>
 #include <QCursor>
-
+#include "ataginputdialog.h"
 
 MainWindow::MainWindow(QWidget *parent) :
         QMainWindow(parent),
@@ -78,6 +78,7 @@ void MainWindow::on_rectangleTool_triggered() {
 }
 
 void MainWindow::on_selectTool_triggered() {
+    item_list_->show_coordinate();
     graphicsView_->set_select_status();
     set_all_rect_enable(true);
     ui->rectangleTool->setEnabled(true);
@@ -92,30 +93,40 @@ void MainWindow::on_selectTool_triggered() {
 
 void MainWindow::handle_draw_rect_finished(ARectItem *item, bool is_manual) {
     QString tag_id = "";
+    QString tag_name = "";
     if (is_manual) {
-        tag_id = QInputDialog::getText(this, "请输入标签名称", "tag_id:");
+        auto input_dialog = new ATagInputDialog(this, "", "");
+        if (QDialog::Accepted != input_dialog->exec()) {
+            return;
+        }
+        tag_id = input_dialog->get_tag_id();
+        tag_name = input_dialog->get_tag_name();
+        if (tag_id.isEmpty()) {
+            delete item;
+            return;
+        }
+        item->set_tag_id(tag_id);
+        item->set_tag_name(tag_name);
     } else {
-        tag_id = item->get_id();
+        tag_id = item->get_tag_id();
+        tag_name = item->get_tag_name();
     }
-    auto list_item = item_list_->add_item(tag_id, item->get_inner_rect());
-    item->set_tag_id(tag_id);
-    items_map_.insert(list_item, item);
+    auto list_item = item_list_->add_item(tag_id, tag_name);
+    items_.append({list_item, item});
+    //items_map_.insert(list_item, item);
     item_list_->re_set_order();
 }
 
 void MainWindow::keyPressEvent(QKeyEvent *event) {
     if (!is_preview_ && event->key() == Qt::Key_Delete) {
-        for (auto it = items_map_.begin(); it != items_map_.end();) {
-            if (it.value()->isSelected()) {
-                // notice 删除当前元素的顺序非常重要
-                delete it.value();
-                delete it.key();
-                // 删除并且迭代器后移
-                it = items_map_.erase(it);
+        for (auto it = items_.begin(); it != items_.end();) {
+            if ((*it).second->isSelected()) {
+                delete it->second;
+                delete it->first;
+                it = items_.erase(it);
                 item_list_->re_set_order();
             } else {
-                // 如果不满足条件，移动到下一个元素
-                ++it;
+                it++;
             }
         }
     }
@@ -123,21 +134,27 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
 }
 
 void MainWindow::handle_rect_item_selected_changed() {
-    QMap<ARectListItem *, ARectItem *>::iterator it;
-    for (it = items_map_.begin(); it != items_map_.end(); it++) {
-        if (it.value()->isSelected()) {
-            it.key()->set_selected(true);
+
+    for (auto &item_pair: items_) {
+        if (item_pair.second->isSelected()) {
+            item_pair.first->set_selected(true);
         } else {
-            it.key()->set_selected(false);
+            item_pair.first->set_selected(false);
         }
     }
 }
 
 void MainWindow::handle_rect_list_select_row_change(ARectListItem *rect_list_item) {
-    auto cur_item = items_map_[rect_list_item];
-    if (cur_item) {
-        cur_item->setSelected(rect_list_item->set_selected_status());
+
+    for (auto &item_pair: items_) {
+        if (item_pair.first == rect_list_item) {
+            item_pair.second->setSelected(item_pair.first->get_selected_status());
+            if (item_pair.second->isSelected()) {
+                item_list_->update_rect_coordinate(item_pair.second->get_inner_rect());
+            }
+        }
     }
+
 }
 
 void MainWindow::on_clearTool_triggered() {
@@ -155,6 +172,8 @@ void MainWindow::on_scaleUpTool_triggered() {
 void MainWindow::on_previewTool_triggered() {
     timer_->start();
     image_pro_->start();
+    item_list_->clear_item_selected();
+    item_list_->hide_coordinate();
     graphicsView_->set_select_status();
     ui->rectangleTool->setEnabled(false);
     ui->clearTool->setEnabled(false);
@@ -193,16 +212,7 @@ void MainWindow::on_importTool_triggered() {
 
 void MainWindow::init_widget() {
     graphicsView_->add_image_item(QPixmap(QSize(Config::frame_width, Config::frame_height)));
-    is_preview_ = true;
-    image_pro_->start();
-    ui->previewTool->setChecked(true);
-    ui->rectangleTool->setEnabled(false);
-    ui->clearTool->setEnabled(false);
-    ui->importTool->setEnabled(false);
-    ui->saveTool->setEnabled(false);
-    ocr_thread_.start();
-    timer_->start();
-
+    on_previewTool_triggered();
     QTimer::singleShot(1500, [&]() {
         init_rect_from_outer_label("label.json");
         set_all_rect_enable(false);
@@ -211,21 +221,16 @@ void MainWindow::init_widget() {
 }
 
 void MainWindow::handle_item_changed(ARectItem *item) {
-    QMap<ARectListItem *, ARectItem *>::iterator it;
-    for (it = items_map_.begin(); it != items_map_.end(); it++) {
-        if (it.value()->get_id() == item->get_id()) {
-            it.key()->update_rect(it.value()->get_inner_rect());
-        }
-    }
+    item_list_->update_rect_coordinate(item->get_inner_rect());
 }
 
 QJsonArray MainWindow::image_label_to_json() {
     QJsonArray arr_phone;
     QJsonObject obj_root, json_box;
-    QMap<ARectListItem *, ARectItem *>::iterator it;
-    for (it = items_map_.begin(); it != items_map_.end(); it++) {
-        auto rect = it.value()->get_inner_rect();
-        obj_root["tag_id"] = it.value()->get_tag_id();
+    for (auto &item_pair: items_) {
+        auto rect = item_pair.second->get_inner_rect();
+        obj_root["tag_id"] = item_pair.second->get_tag_id();
+        obj_root["tag_name"] = item_pair.second->get_tag_name();
         json_box["x"] = rect.x();
         json_box["y"] = rect.y();
         json_box["w"] = rect.width();
@@ -233,6 +238,7 @@ QJsonArray MainWindow::image_label_to_json() {
         obj_root["box"] = json_box;
         arr_phone.append(obj_root);
     }
+
     return arr_phone;
 }
 
@@ -257,10 +263,10 @@ void MainWindow::init_rect_from_outer_label(const QString &file_name) {
 }
 
 void MainWindow::clear_label() {
-    for (auto item: items_map_) {
-        graphicsView_->remove_item_from_scene(item);
+    for (auto &item_pair: items_) {
+        graphicsView_->remove_item_from_scene(item_pair.second);
     }
-    items_map_.clear();
+    items_.clear();
     item_list_->clear();
 }
 
@@ -270,15 +276,21 @@ void MainWindow::handle_ocr_recognition_finished(const QJsonArray &ocr_result) {
 }
 
 void MainWindow::handle_item_double_clicked(ARectListItem *item) {
-    auto tag_id = QInputDialog::getText(this,
-                                        "请输入新的tag_id",
-                                        "tag_id:",
-                                        QLineEdit::Normal, item->get_tag_id());
+    auto input_dialog = new ATagInputDialog(this, item->get_tag_id(), item->get_tag_name());
+    if (QDialog::Accepted != input_dialog->exec()) {
+        return;
+    }
+    auto tag_id = input_dialog->get_tag_id();
+    auto tag_name = input_dialog->get_tag_name();
+
     if (!tag_id.isEmpty()) {
-        auto rect_item = items_map_[item];
-        if (rect_item) {
-            item->set_tag_id(tag_id);
-            rect_item->set_tag_id(tag_id);
+        for (auto &item_pair: items_) {
+            if (item_pair.first == item) {
+                item_pair.first->set_tag_id(tag_id);
+                item_pair.first->set_tag_name(tag_name);
+                item_pair.second->set_tag_id(tag_id);
+                item_pair.second->set_tag_name(tag_name);
+            }
         }
     }
 }
@@ -289,13 +301,14 @@ void MainWindow::handle_receive_image(const QImage &image) {
 
 void MainWindow::draw_rect_from_json_array(const QJsonArray &json_array) {
     for (auto object: json_array) {
-        auto id = object.toObject().value("name").toString();
+        auto tag_id = object.toObject().value("tag_id").toString();
+        auto tag_name = object.toObject().value("tag_name").toString();
         auto box = object.toObject().value("box").toObject();
         auto x = box.value("x").toDouble();
         auto y = box.value("y").toDouble();
         auto w = box.value("w").toDouble();
         auto h = box.value("h").toDouble();
-        graphicsView_->draw_real_rect(id, QRectF(x, y, w, h));
+        graphicsView_->draw_real_rect(tag_id, tag_name, QRectF(x, y, w, h));
     }
 }
 

@@ -17,11 +17,17 @@ public:
 
     ~ARectList();
 
-    ARectListItem *add_item(const QString &name, const QRectF &rect);
+    ARectListItem *add_item(const QString &tag_id, const QString &tag_name);
 
     void clear();
 
+    void hide_coordinate();
+
+    void show_coordinate();
+
     void re_set_order();
+
+    void update_rect_coordinate(const QRectF &rect);
 
     void clear_item_selected();
 

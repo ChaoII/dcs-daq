@@ -6,6 +6,8 @@
 
 #include "arectlistitem.h"
 #include "ui_ARectListItem.h"
+#include <QLabel>
+#include <QFontMetrics>
 
 
 ARectListItem::ARectListItem(QWidget *parent) :
@@ -46,12 +48,16 @@ void ARectListItem::set_selected(bool status) {
     emit selected_status_change_signal();
 }
 
-void ARectListItem::set_item(const QString &name, const QRectF &rect) {
-    ui->lb_itemName->setText(name);
-    ui->lb_x->setText(QString::number(rect.x()));
-    ui->lb_y->setText(QString::number(rect.y()));
-    ui->lb_width->setText(QString::number(rect.width()));
-    ui->lb_height->setText(QString::number(rect.height()));
+void ARectListItem::set_item(const QString &tag_id, const QString &tag_name) {
+    QFontMetrics fontWidth(ui->lb_tag_id->font());
+    auto elide_tag_id = fontWidth.elidedText(tag_id, Qt::ElideRight, ui->lb_tag_id->width());
+    ui->lb_tag_id->setText(elide_tag_id);
+    ui->lb_tag_id->setToolTip(tag_id);
+
+    QFontMetrics fontWidth_(ui->lb_tag_name->font());
+    auto elide_tag_name = fontWidth_.elidedText(tag_name, Qt::ElideRight, ui->lb_tag_name->width());
+    ui->lb_tag_name->setText(elide_tag_name);
+    ui->lb_tag_name->setToolTip(tag_name);
 }
 
 
@@ -59,23 +65,27 @@ QLabel *ARectListItem::get_order_label() {
     return ui->lb_order;
 }
 
-bool ARectListItem::set_selected_status() {
+bool ARectListItem::get_selected_status() {
     return selected_status_;
 }
 
-void ARectListItem::update_rect(const QRectF &rect) {
-    ui->lb_x->setText(QString::number(rect.x()));
-    ui->lb_y->setText(QString::number(rect.y()));
-    ui->lb_width->setText(QString::number(rect.width()));
-    ui->lb_height->setText(QString::number(rect.height()));
-}
 
 void ARectListItem::set_tag_id(const QString &tag_id) {
-    ui->lb_itemName->setText(tag_id);
+    ui->lb_tag_id->setText(tag_id);
 }
 
 QString ARectListItem::get_tag_id() {
-    return ui->lb_itemName->text();
+    return ui->lb_tag_id->text();
+}
+
+void ARectListItem::set_tag_name(const QString &tag_name) {
+
+    ui->lb_tag_name->setText(tag_name);
+
+}
+
+QString ARectListItem::get_tag_name() {
+    return ui->lb_tag_name->text();
 }
 
 
