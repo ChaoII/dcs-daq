@@ -136,6 +136,12 @@ void AGraphicsView::show_cross_line() {
     }
 }
 
+void AGraphicsView::reset_scale() {
+
+    scale(1 / scale_factor_, 1 / scale_factor_);
+    scale_factor_ = 1.0;
+}
+
 AGraphicsView::~AGraphicsView() {
     delete ui;
 }
@@ -153,7 +159,6 @@ void AGraphicsView::setup_scale(double scale) {
 
 void AGraphicsView::scale_down() {
     double const factor = std::pow(Config::scale_step, -1.0);
-
     if (scale_range_.minimum > 0) {
         QTransform t = transform();
         t.scale(factor, factor);
@@ -163,6 +168,7 @@ void AGraphicsView::scale_down() {
         }
     }
     scale(factor, factor);
+    scale_factor_ *= factor;
 }
 
 void AGraphicsView::scale_up() {
@@ -176,6 +182,7 @@ void AGraphicsView::scale_up() {
         }
     }
     scale(factor, factor);
+    scale_factor_ *= factor;
 }
 
 void AGraphicsView::set_scale_range(double minimum, double maximum) {
@@ -341,6 +348,8 @@ void AGraphicsView::draw_real_rect(const QString &tag_id, const QString &tag_nam
     emit send_draw_final_signal(rect_item, is_manual);
 
 }
+
+
 
 
 

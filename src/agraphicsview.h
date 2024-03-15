@@ -39,6 +39,8 @@ public:
 
     void scale_up();
 
+    void reset_scale();
+
     void setup_scale(double scale);
 
     void set_scale_range(double minimum, double maximum);
@@ -55,6 +57,7 @@ private:
     void hide_cross_line();
 
     void show_cross_line();
+
 
 protected:
 
@@ -118,6 +121,7 @@ private:
     bool is_load_background_picture_ = false;
     /// 当当前鼠标所在位置的图元数大于items_threshold_时禁用绘制行为，即设置can_draw_为false
     int items_threshold_ = 2;
+    double scale_factor_ = 1.0;
     QGraphicsPixmapItem *background_img_item = nullptr;
 };
 

@@ -69,6 +69,8 @@ private slots:
 
     void on_importTool_triggered();
 
+    void on_fullscreenTool_triggered();
+
 
 private:
     void clear_label();
@@ -85,8 +87,16 @@ private:
 
     void set_all_rect_enable(bool status);
 
+    void show_full_screen();
+
+    void show_normal();
+
+    void get_scale_ratio();
+
 private:
     Ui::MainWindow *ui;
+    bool is_normal_ = true;
+    double scale_ratio_ = 1.0;
     QLabel *status_view_cord_ = nullptr;
     QLabel *status_scene_cord_ = nullptr;
     ARectList *item_list_ = nullptr;

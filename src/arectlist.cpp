@@ -5,8 +5,8 @@ ARectList::ARectList(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::ARectList) {
     ui->setupUi(this);
-    setMinimumWidth(200);
-    setMaximumWidth(400);
+    setMinimumWidth(180);
+    setMaximumWidth(500);
 }
 
 ARectList::~ARectList() {
@@ -86,27 +86,6 @@ void ARectList::update_rect_coordinate(const QRectF &rect) {
     update();
 }
 
-void ARectList::hide_coordinate() {
-    ui->lb_x->setVisible(false);
-    ui->lb_y->setVisible(false);
-    ui->lb_w->setVisible(false);
-    ui->lb_h->setVisible(false);
-    ui->lb_xl->setVisible(false);
-    ui->lb_yl->setVisible(false);
-    ui->lb_wl->setVisible(false);
-    ui->lb_hl->setVisible(false);
-}
-
-void ARectList::show_coordinate() {
-    ui->lb_x->setVisible(true);
-    ui->lb_y->setVisible(true);
-    ui->lb_w->setVisible(true);
-    ui->lb_h->setVisible(true);
-    ui->lb_xl->setVisible(true);
-    ui->lb_yl->setVisible(true);
-    ui->lb_wl->setVisible(true);
-    ui->lb_hl->setVisible(true);
-}
 
 
 

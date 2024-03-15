@@ -12,6 +12,7 @@ MainWindow::MainWindow(QWidget *parent) :
         ui(new Ui::MainWindow) {
 
     ui->setupUi(this);
+    this->setWindowTitle("DCSDAQ");
     graphicsView_ = new AGraphicsView();
     graphicsView_->installEventFilter(this);
     status_view_cord_ = new QLabel("View 坐标：");
@@ -20,6 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     status_scene_cord_->setMinimumWidth(150);
     ui->statusBar->addWidget(status_view_cord_);
     ui->statusBar->addWidget(status_scene_cord_);
+    ui->statusBar->addPermanentWidget(new QLabel("v1.24.3.2"));
 
     auto action_group = new QActionGroup(this);
     action_group->addAction(ui->rectangleTool);
@@ -33,6 +35,7 @@ MainWindow::MainWindow(QWidget *parent) :
     item_list_ = new ARectList();
     h_spliter->addWidget(graphicsView_);
     h_spliter->addWidget(item_list_);
+
 
     image_pro_ = new ACameraPro(this);
     connect(image_pro_, &ACameraPro::send_image_signal, this, &MainWindow::handle_receive_image);
@@ -78,13 +81,14 @@ void MainWindow::on_rectangleTool_triggered() {
 }
 
 void MainWindow::on_selectTool_triggered() {
-    item_list_->show_coordinate();
+    item_list_->show();
     graphicsView_->set_select_status();
     set_all_rect_enable(true);
     ui->rectangleTool->setEnabled(true);
     ui->clearTool->setEnabled(true);
     ui->importTool->setEnabled(true);
     ui->saveTool->setEnabled(true);
+    ui->fullscreenTool->setEnabled(false);
     image_pro_->stop();
     timer_->stop();
     is_preview_ = false;
@@ -113,7 +117,6 @@ void MainWindow::handle_draw_rect_finished(ARectItem *item, bool is_manual) {
     }
     auto list_item = item_list_->add_item(tag_id, tag_name);
     items_.append({list_item, item});
-    //items_map_.insert(list_item, item);
     item_list_->re_set_order();
 }
 
@@ -129,6 +132,8 @@ void MainWindow::keyPressEvent(QKeyEvent *event) {
                 it++;
             }
         }
+    } else if (is_preview_ && event->key() == Qt::Key_Escape) {
+        show_normal();
     }
     QMainWindow::keyPressEvent(event);
 }
@@ -173,12 +178,14 @@ void MainWindow::on_previewTool_triggered() {
     timer_->start();
     image_pro_->start();
     item_list_->clear_item_selected();
-    item_list_->hide_coordinate();
+    item_list_->hide();
+    is_preview_ = true;
     graphicsView_->set_select_status();
     ui->rectangleTool->setEnabled(false);
     ui->clearTool->setEnabled(false);
     ui->importTool->setEnabled(false);
     ui->saveTool->setEnabled(false);
+    ui->fullscreenTool->setEnabled(true);
     set_all_rect_enable(false);
 }
 
@@ -210,6 +217,12 @@ void MainWindow::on_importTool_triggered() {
 
 }
 
+void MainWindow::on_fullscreenTool_triggered() {
+    if (is_preview_) {
+        show_full_screen();
+    }
+}
+
 void MainWindow::init_widget() {
     graphicsView_->add_image_item(QPixmap(QSize(Config::frame_width, Config::frame_height)));
     on_previewTool_triggered();
@@ -218,6 +231,8 @@ void MainWindow::init_widget() {
         set_all_rect_enable(false);
         opc_->update_nodes(json_array_);
     });
+    get_scale_ratio();
+    show_full_screen();
 }
 
 void MainWindow::handle_item_changed(ARectItem *item) {
@@ -316,6 +331,37 @@ void MainWindow::update_rect_from_json_array(const QJsonArray &json_array) {
     json_array_ = json_array;
     draw_rect_from_json_array(json_array_);
 }
+
+void MainWindow::show_full_screen() {
+    if (!is_normal_) return;
+    this->ui->toolBar->setVisible(false);
+    this->ui->statusBar->setVisible(false);
+    this->ui->verticalLayout->setContentsMargins(0, 0, 0, 0);
+    graphicsView_->reset_scale();
+    graphicsView_->scale(scale_ratio_, scale_ratio_);
+    this->showFullScreen();
+    is_normal_ = false;
+}
+
+void MainWindow::show_normal() {
+    if (is_normal_) return;
+    this->ui->toolBar->setVisible(true);
+    this->ui->statusBar->setVisible(true);
+    this->ui->verticalLayout->setContentsMargins(9, 9, 9, 9);
+
+    graphicsView_->scale(1 / scale_ratio_, 1 / scale_ratio_);
+    this->showNormal();
+    is_normal_ = true;
+}
+
+void MainWindow::get_scale_ratio() {
+    auto screen = QApplication::primaryScreen()->size();
+    auto rate_w = (double) screen.width() / Config::frame_width;
+    auto rate_h = (double) screen.height() / Config::frame_height;
+    scale_ratio_ = rate_w < rate_h ? rate_w : rate_h;
+}
+
+
 
 
 

@@ -1,5 +1,6 @@
 <RCC>
   <qresource prefix="/">
+    <file>images/fullscreen.png</file>
     <file>images/write.png</file>
     <file>images/import.png</file>
     <file>images/save.png</file>

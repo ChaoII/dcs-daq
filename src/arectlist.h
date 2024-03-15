@@ -21,10 +21,6 @@ public:
 
     void clear();
 
-    void hide_coordinate();
-
-    void show_coordinate();
-
     void re_set_order();
 
     void update_rect_coordinate(const QRectF &rect);

@@ -53,6 +53,7 @@
    <addaction name="separator"/>
    <addaction name="scaleUpTool"/>
    <addaction name="scaleDownTool"/>
+   <addaction name="fullscreenTool"/>
   </widget>
   <action name="rectangleTool">
    <property name="checkable">
@@ -178,6 +179,21 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+I</string>
+   </property>
+  </action>
+  <action name="fullscreenTool">
+   <property name="icon">
+    <iconset resource="../qrc.qrc">
+     <normaloff>:/images/fullscreen.png</normaloff>:/images/fullscreen.png</iconset>
+   </property>
+   <property name="text">
+    <string>全屏</string>
+   </property>
+   <property name="toolTip">
+    <string>全屏</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
    </property>
   </action>
  </widget>
