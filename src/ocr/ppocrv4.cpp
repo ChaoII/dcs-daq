@@ -60,8 +60,8 @@ void PPOCRV4::predict(const cv::Mat &image, const QJsonArray &json_array) {
 void PPOCRV4::ocr_result_to_json(const QString &tag_id, const OCRResult &result, QJsonArray &root) {
     QJsonObject json_result;
     json_result["tag_id"] = tag_id;
-    auto tag_value = 0.0;
-    if (result.rec_scores[0] > 0.5f) {
+    auto tag_value = 100.36;
+    if (result.rec_scores[0] > 0.2f) {
         tag_value = QString::fromStdString(result.text[0]).toDouble();
     }
     json_result["text"] = tag_value;

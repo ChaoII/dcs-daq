@@ -57,7 +57,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(item_list_, &ARectList::item_double_clicked_signal, this, &MainWindow::handle_item_double_clicked);
 
     timer_ = new QTimer(this);
-    timer_->setInterval(2000);
+    timer_->setInterval(1000);
     connect(timer_, &QTimer::timeout, this, &MainWindow::handle_ocr_recognize);
     init_widget();
 }
@@ -99,8 +99,13 @@ void MainWindow::handle_draw_rect_finished(ARectItem *item, bool is_manual) {
     QString tag_id = "";
     QString tag_name = "";
     if (is_manual) {
-        auto input_dialog = new ATagInputDialog(this, "", "");
+        if(item->get_inner_rect().width()<2||item->get_inner_rect().height()<2){
+            delete item;
+            return;
+        }
+        auto input_dialog = new ATagInputDialog(this, last_tag_id_, last_tag_name_);
         if (QDialog::Accepted != input_dialog->exec()) {
+            delete item;
             return;
         }
         tag_id = input_dialog->get_tag_id();
@@ -111,6 +116,10 @@ void MainWindow::handle_draw_rect_finished(ARectItem *item, bool is_manual) {
         }
         item->set_tag_id(tag_id);
         item->set_tag_name(tag_name);
+        last_tag_id_ = tag_id;
+        last_tag_name_ = tag_name;
+        ui->selectTool->setChecked(true);
+        on_selectTool_triggered();
     } else {
         tag_id = item->get_tag_id();
         tag_name = item->get_tag_name();
@@ -232,6 +241,7 @@ void MainWindow::init_widget() {
         set_all_rect_enable(false);
         opc_->update_nodes(json_array_);
     });
+    ocr_thread_.start();
     get_scale_ratio();
     show_full_screen();
 }
@@ -254,11 +264,11 @@ QJsonArray MainWindow::image_label_to_json() {
         obj_root["box"] = json_box;
         arr_phone.append(obj_root);
     }
-
     return arr_phone;
 }
 
 void MainWindow::handle_update_image(const QImage &img) {
+
     current_image_ = img;
 }
 
@@ -311,7 +321,8 @@ void MainWindow::handle_item_double_clicked(ARectListItem *item) {
     }
 }
 
-void MainWindow::handle_receive_image(const QImage &image) {
+void MainWindow::handle_receive_image(const QImage &image_) {
+    QImage image("C:/Users/AC/Desktop/c.png");
     graphicsView_->update_background_image(image);
 }
 

@@ -105,11 +105,23 @@ void AGraphicsView::add_image_item(const QPixmap &pix) {
 
 void AGraphicsView::set_draw_shape_status() {
     draw_rect_checked_ = true;
+    for(auto& item: this->scene()->items()){
+        auto rect_item = dynamic_cast<ARectItem*>(item);
+        if(rect_item){
+            rect_item->set_moveable(false);
+        }
+    }
     show_cross_line();
 }
 
 void AGraphicsView::set_select_status() {
     draw_rect_checked_ = false;
+    for(auto& item: this->scene()->items()){
+        auto rect_item = dynamic_cast<ARectItem*>(item);
+        if(rect_item){
+            rect_item->set_moveable(true);
+        }
+    }
     hide_cross_line();
 }
 

@@ -97,6 +97,8 @@ private:
     Ui::MainWindow *ui;
     bool is_normal_ = true;
     double scale_ratio_ = 1.0;
+    QString last_tag_id_ = "";
+    QString last_tag_name_ = "";
     QLabel *status_view_cord_ = nullptr;
     QLabel *status_scene_cord_ = nullptr;
     ARectList *item_list_ = nullptr;

@@ -69,11 +69,9 @@ public:
 
     void move_by(const QPointF &point);
 
+    void set_moveable(bool is_move_able);
+
 private:
-    /// 根据角度计算鼠标光标的类型
-    /// \param angle 角度
-    /// \return 鼠标光标类型
-    Qt::CursorShape get_resize_cursor_shape(qreal angle);
 
     static void resize_and_check_rect(const QPointF &p1, const QPointF &p2, QRectF &rect);
 
@@ -128,13 +126,13 @@ private:
     /// item的横纵比
     qreal item_ratio_;
     /// 外边界框矩形距Item的pad
-    int pad_size_ = 10;
+    int pad_size_ = 1;
     /// 四角缩放控制点图像直径
-    int control_point_size_ = 6;
+    int control_point_size_ = 4;
     /// 旋转点距离外框矩形的距离
-    int ratio_line_len_ = 12;
+    int ratio_line_len_ = 8;
     /// //旋转点图像直径
-    int rotate_ellipse_width_ = 10;
+    int rotate_ellipse_width_ = 6;
     /// item选中时四个缩放控制点和旋转控制点的绘制位置
     QRectF top_left_rect_, top_right_rect_, bottom_left_rect_, bottom_right_rect_, rotate_rect_;
     /// 各顶点的角度
@@ -145,6 +143,8 @@ private:
     QCursor rotate_press_cursor_;
     /// item的变换矩阵
     QTransform transform_;
+
+    bool is_moveable_;
 };
 
 

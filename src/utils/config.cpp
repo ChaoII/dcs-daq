@@ -24,20 +24,7 @@ Config::Config() {
     auto frame_size_obj = configs.value("frame_size").toObject();
     frame_size = {frame_size_obj.value("width").toInt(), frame_size_obj.value("height").toInt()};
     OPC_server_endpoint = configs.value("OPC_server_endpoint").toString();
-    OPC_prefix = configs.value("OPC_prefix").toString().replace(":","=");
-    qDebug() << scale_range.min;
-    qDebug() << scale_range.max;
-    qDebug() << default_scene_size;
-    qDebug() << default_scene_size;
-    qDebug()<<view_bg_color;
-    qDebug()<<view_inter_line_color;
-    qDebug()<<inter_grid_step;
-    qDebug()<<border_grid_step;
-    qDebug()<<view_border_line_color;
-    qDebug()<<frame_size.width;
-    qDebug()<<frame_size.height;
-    qDebug()<<OPC_server_endpoint;
-    qDebug()<<OPC_prefix;
+    OPC_prefix = configs.value("OPC_prefix").toString();
 }
 
 

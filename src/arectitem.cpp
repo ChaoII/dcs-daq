@@ -16,10 +16,6 @@ ARectItem::ARectItem(QString tag_id, QString tag_name, const QRectF &rect) :
     this->setCacheMode(QGraphicsItem::NoCache);
     this->item_ratio_ = rect.width() / rect.height();
     this->setAcceptHoverEvents(true);
-    this->rotate_hover_cursor_ = QCursor(
-            QPixmap(":/images/rotate.png").scaled(32, 32, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
-    this->rotate_press_cursor_ = QCursor(
-            QPixmap(":/images/rotate.png").scaled(32, 32, Qt::IgnoreAspectRatio, Qt::SmoothTransformation));
 
     left_top_ = rect.topLeft();
 
@@ -50,13 +46,13 @@ QString ARectItem::get_id() {
 
 QRectF ARectItem::boundingRect() const {
     QRectF rect = dash_box_;
-    if (this->isSelected()) {
-        rect.adjust(-this->control_point_size_,
-                    -this->control_point_size_,
-                    this->control_point_size_,
-                    this->control_point_size_);
-        rect.adjust(0, 0, 0, this->ratio_line_len_ + this->rotate_ellipse_width_);
-    }
+//    if (this->isSelected()) {
+//        rect.adjust(-this->control_point_size_,
+//                    -this->control_point_size_,
+//                    this->control_point_size_,
+//                    this->control_point_size_);
+//        rect.adjust(0, 0, 0, this->ratio_line_len_ + this->rotate_ellipse_width_);
+//    }
     return rect;
 }
 
@@ -79,7 +75,6 @@ void ARectItem::paint(QPainter *painter, const QStyleOptionGraphicsItem *option,
         painter->setPen(QPen(Qt::gray, 1, Qt::DashLine));
         painter->setBrush(Qt::NoBrush);
         painter->drawRect(dash_box_);
-        painter->drawRect(boundingRect());
         painter->drawLine(QLineF(QPointF(dash_box_.left() + dash_box_.width() / 2,
                                          dash_box_.bottom()),
                                  QPointF(dash_box_.left() + dash_box_.width() / 2,
@@ -130,33 +125,9 @@ void ARectItem::update_item() {
     update();
 }
 
-Qt::CursorShape ARectItem::get_resize_cursor_shape(qreal angle) {
-    qreal sector = M_PI_4;
-    qreal value = angle + sector / 2;
-    qreal theta = fmod(value, M_PI);
-    if (theta < 0) {
-        theta += M_PI;
-    }
-    int index = static_cast<int>(floor(theta / sector));
-
-    qDebug() << "index: " << index;
-
-    switch (index) {
-        case 0:
-            return Qt::SizeHorCursor;
-        case 1:
-            return Qt::SizeBDiagCursor;
-        case 2:
-            return Qt::SizeVerCursor;
-        case 3:
-            return Qt::SizeFDiagCursor;
-        default:
-            return Qt::ArrowCursor;
-    }
-}
 
 void ARectItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
-    if (cursor_type_ == CursorType::HAND_OPEN_CURSOR) {
+    if (is_moveable_ && cursor_type_ == CursorType::HAND_OPEN_CURSOR) {
         press_pos_ = event->scenePos();
         cursor_type_ = CursorType::HAND_CLOSE_CURSOR;
         setCursor(Qt::ClosedHandCursor);
@@ -171,6 +142,9 @@ void ARectItem::mousePressEvent(QGraphicsSceneMouseEvent *event) {
 
 void ARectItem::mouseMoveEvent(QGraphicsSceneMouseEvent *event) {
     prepareGeometryChange();
+    if(!is_moveable_){
+        return;
+    }
     switch (operation_) {
         case ItemOperation::MOVE: {
             rect_ = QRectF(left_top_ + event->scenePos() - this->press_pos_,
@@ -227,32 +201,21 @@ void ARectItem::hoverEnterEvent(QGraphicsSceneHoverEvent *event) {
         this->setCursor(Qt::OpenHandCursor);
     } else {
         QPointF pos = event->pos();
-        QRectF rect = rect_;
-        qreal angle = qAtan2(this->transform().m12(), this->transform().m11());
         QMarginsF pad = QMarginsF(1, 1, 1, 1);
-        rect.adjust(-this->pad_size_, -this->pad_size_, this->pad_size_, this->pad_size_);
         if ((this->top_left_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_LEFT_TOP_CURSOR;
-            angle = this->top_left_angle_ - angle;
-            this->setCursor(get_resize_cursor_shape(angle));
-            this->setToolTip(QString("缩放"));
+            this->setCursor(Qt::SizeFDiagCursor);
         } else if ((this->bottom_right_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_RIGHT_BOTTOM_CURSOR;
-            angle = this->bottom_right_angle_ - angle;
-            this->setCursor(get_resize_cursor_shape(angle));
-            this->setToolTip(QString("缩放"));
+            this->setCursor(Qt::SizeFDiagCursor);
         } else if ((this->top_right_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_RIGHT_TOP_CURSOR;
-            angle = this->top_right_angle_ - angle;
-            this->setCursor(get_resize_cursor_shape(angle));
-            this->setToolTip(QString("缩放"));
+            this->setCursor(Qt::SizeBDiagCursor);
         } else if ((this->bottom_left_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_LEFT_BOTTOM_CURSOR;
-            angle = this->bottom_left_angle_ - angle;
-            this->setCursor(get_resize_cursor_shape(angle));
-            this->setToolTip(QString("缩放"));
+            this->setCursor(Qt::SizeBDiagCursor);
         } else {
-            if (rect.contains(pos)) {
+            if (dash_box_.contains(pos)) {
                 this->cursor_type_ = HAND_OPEN_CURSOR;
                 this->setCursor(Qt::OpenHandCursor);
                 this->setToolTip(QString("移动"));
@@ -270,28 +233,21 @@ void ARectItem::hoverMoveEvent(QGraphicsSceneHoverEvent *event) {
         this->setCursor(Qt::OpenHandCursor);
     } else {
         QPointF pos = event->pos();
-        QRectF rect = rect_;
-        qreal angle = qAtan2(this->transform().m12(), this->transform().m11());
         QMarginsF pad = QMarginsF(1, 1, 1, 1);
-        rect.adjust(-this->pad_size_, -this->pad_size_, this->pad_size_, this->pad_size_);
         if ((this->top_left_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_LEFT_TOP_CURSOR;
-            angle = this->top_left_angle_ - angle;
-            this->setCursor(get_resize_cursor_shape(angle));
+            this->setCursor(Qt::SizeFDiagCursor);
         } else if ((this->bottom_right_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_RIGHT_BOTTOM_CURSOR;
-            angle = this->bottom_right_angle_ - angle;
-            this->setCursor(get_resize_cursor_shape(angle));
+            this->setCursor(Qt::SizeFDiagCursor);
         } else if ((this->top_right_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_RIGHT_TOP_CURSOR;
-            angle = this->top_right_angle_ - angle;
-            this->setCursor(get_resize_cursor_shape(angle));
+            this->setCursor(Qt::SizeBDiagCursor);
         } else if ((this->bottom_left_rect_ + pad).contains(pos)) {
             this->cursor_type_ = RESIZE_LEFT_BOTTOM_CURSOR;
-            angle = this->bottom_left_angle_ - angle;
-            this->setCursor(get_resize_cursor_shape(angle));
+            this->setCursor(Qt::SizeBDiagCursor);
         } else {
-            if (rect.contains(pos)) {
+            if (dash_box_.contains(pos)) {
                 this->cursor_type_ = HAND_OPEN_CURSOR;
                 this->setCursor(Qt::OpenHandCursor);
             }
@@ -339,6 +295,9 @@ QString ARectItem::get_tag_name() {
     return tag_name_;
 }
 
+void ARectItem::set_moveable(bool is_moveable){
+    is_moveable_ = is_moveable;
+}
 
 
 
