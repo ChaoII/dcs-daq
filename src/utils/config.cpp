@@ -25,6 +25,8 @@ Config::Config() {
     frame_size = {frame_size_obj.value("width").toInt(), frame_size_obj.value("height").toInt()};
     OPC_server_endpoint = configs.value("OPC_server_endpoint").toString();
     OPC_prefix = configs.value("OPC_prefix").toString();
+    label_json = configs.value("label_json").toString();
+    tag_table = configs.value("tag_table").toString();
 }
 
 

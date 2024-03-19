@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <QTimer>
 #include <QObject>
 #include <QJsonArray>
 #include <QJsonObject>
@@ -20,7 +21,9 @@ public:
 
     void write_attribute(const QJsonArray &json_array);
 
-    void update_nodes(const QJsonArray &json_array);
+    void update_nodes_array(const QJsonArray &json_array);
+
+    void update_nodes_map();
 
 
 public slots:
@@ -31,11 +34,15 @@ public slots:
 
     void on_state_changed(QOpcUaClient::ClientState state);
 
+    void on_reconnect_endpoint();
+
 
 private:
+    QTimer *timer_ = nullptr;
     QOpcUaClient *client_ = nullptr;
     QOpcUaProvider *provider_ = nullptr;
     QMap<QString, QOpcUaNode *> node_map_;
+    QJsonArray json_array_node_;
 };
 
 

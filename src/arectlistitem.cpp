@@ -14,6 +14,10 @@ ARectListItem::ARectListItem(QWidget *parent) :
         QWidget(parent), ui(new Ui::ARectListItem) {
     ui->setupUi(this);
     this->setAttribute(Qt::WA_StyledBackground, true);
+    ui->lb_tag_id->setMaximumWidth(250);
+    ui->lb_tag_name->setMaximumWidth(250);
+    ui->lb_tag_id->setMinimumWidth(150);
+    ui->lb_tag_name->setMinimumWidth(150);
 }
 
 ARectListItem::~ARectListItem() {
@@ -50,12 +54,12 @@ void ARectListItem::set_selected(bool status) {
 
 void ARectListItem::set_item(const QString &tag_id, const QString &tag_name) {
     QFontMetrics fontWidth(ui->lb_tag_id->font());
-    auto elide_tag_id = fontWidth.elidedText(tag_id, Qt::ElideRight, ui->lb_tag_id->width());
+    auto elide_tag_id = fontWidth.elidedText(tag_id, Qt::ElideRight, ui->lb_tag_id->maximumWidth());
     ui->lb_tag_id->setText(elide_tag_id);
     ui->lb_tag_id->setToolTip(tag_id);
 
     QFontMetrics fontWidth_(ui->lb_tag_name->font());
-    auto elide_tag_name = fontWidth_.elidedText(tag_name, Qt::ElideRight, ui->lb_tag_name->width());
+    auto elide_tag_name = fontWidth_.elidedText(tag_name, Qt::ElideRight, ui->lb_tag_name->maximumWidth());
     ui->lb_tag_name->setText(elide_tag_name);
     ui->lb_tag_name->setToolTip(tag_name);
 }

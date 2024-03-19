@@ -99,7 +99,7 @@ void MainWindow::handle_draw_rect_finished(ARectItem *item, bool is_manual) {
     QString tag_id = "";
     QString tag_name = "";
     if (is_manual) {
-        if(item->get_inner_rect().width()<2||item->get_inner_rect().height()<2){
+        if (item->get_inner_rect().width() < 2 || item->get_inner_rect().height() < 2) {
             delete item;
             return;
         }
@@ -200,9 +200,10 @@ void MainWindow::on_previewTool_triggered() {
 
 void MainWindow::on_saveTool_triggered() {
     json_array_ = image_label_to_json();
-    Utils::write_json(json_array_, "label.json");
-    QMessageBox::information(this, "提示", "文件[label.json]保存成功");
-    opc_->update_nodes(json_array_);
+    Utils::write_json(json_array_, Config::Instance().label_json);
+    save_tag_table_file(Config::Instance().tag_table);
+    QMessageBox::information(this, "提示", "label保存成功");
+    opc_->update_nodes_array(json_array_);
 }
 
 void MainWindow::on_importTool_triggered() {
@@ -237,9 +238,9 @@ void MainWindow::init_widget() {
             QPixmap(QSize(Config::Instance().frame_size.width, Config::Instance().frame_size.height)));
     on_previewTool_triggered();
     QTimer::singleShot(1500, [&]() {
-        init_rect_from_outer_label("label.json");
+        init_rect_from_outer_label(Config::Instance().label_json);
         set_all_rect_enable(false);
-        opc_->update_nodes(json_array_);
+        opc_->update_nodes_array(json_array_);
     });
     ocr_thread_.start();
     get_scale_ratio();
@@ -308,7 +309,6 @@ void MainWindow::handle_item_double_clicked(ARectListItem *item) {
     }
     auto tag_id = input_dialog->get_tag_id();
     auto tag_name = input_dialog->get_tag_name();
-
     if (!tag_id.isEmpty()) {
         for (auto &item_pair: items_) {
             if (item_pair.first == item) {
@@ -360,7 +360,6 @@ void MainWindow::show_normal() {
     this->ui->toolBar->setVisible(true);
     this->ui->statusBar->setVisible(true);
     this->ui->verticalLayout->setContentsMargins(9, 9, 9, 9);
-
     graphicsView_->scale(1 / scale_ratio_, 1 / scale_ratio_);
     this->showNormal();
     is_normal_ = true;
@@ -371,6 +370,20 @@ void MainWindow::get_scale_ratio() {
     auto rate_w = (double) screen.width() / Config::Instance().frame_size.width;
     auto rate_h = (double) screen.height() / Config::Instance().frame_size.height;
     scale_ratio_ = rate_w < rate_h ? rate_w : rate_h;
+}
+
+void MainWindow::save_tag_table_file(const QString &filename) {
+    QFile file(filename);
+    QString lines;
+    if (file.open(QIODeviceBase::ReadWrite)) {
+        for (auto json_array: json_array_) {
+            auto tag_id = "ns=2;s=" + json_array.toObject().value("tag_id").toString();
+            auto tag_name = json_array.toObject().value("tag_name").toString();
+            lines += tag_id + "," + tag_name + ",Float\n";
+        }
+        file.write(lines.toUtf8());
+    }
+    file.close();
 }
 
 

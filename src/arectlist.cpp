@@ -5,7 +5,7 @@ ARectList::ARectList(QWidget *parent) :
         QWidget(parent),
         ui(new Ui::ARectList) {
     ui->setupUi(this);
-    setMinimumWidth(180);
+    setMinimumWidth(220);
     setMaximumWidth(500);
 }
 
@@ -79,10 +79,10 @@ void ARectList::on_double_clicked() {
 }
 
 void ARectList::update_rect_coordinate(const QRectF &rect) {
-    ui->lb_x->setText(QString::number(rect.x()));
-    ui->lb_y->setText(QString::number(rect.y()));
-    ui->lb_w->setText(QString::number(rect.width()));
-    ui->lb_h->setText(QString::number(rect.height()));
+    ui->lb_x->setText(QString::number(rect.x(), 'f', 2));
+    ui->lb_y->setText(QString::number(rect.y(), 'f', 2));
+    ui->lb_w->setText(QString::number(rect.width(), 'f', 2));
+    ui->lb_h->setText(QString::number(rect.height(), 'f', 2));
     update();
 }
 

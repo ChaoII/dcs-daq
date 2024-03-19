@@ -43,8 +43,10 @@ public:
     int border_grid_step;
     QColor view_border_line_color;
     FrameSize frame_size;
-    QString OPC_server_endpoint = "opc.tcp://127.0.0.1:49320";
-    QString OPC_prefix = "ns=2;s=DCSDAQ.PC1.";
+    QString OPC_server_endpoint;
+    QString OPC_prefix;
+    QString label_json;
+    QString tag_table;
 };
 
 

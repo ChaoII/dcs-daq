@@ -93,6 +93,8 @@ private:
 
     void get_scale_ratio();
 
+    void save_tag_table_file(const QString& filename);
+
 private:
     Ui::MainWindow *ui;
     bool is_normal_ = true;
