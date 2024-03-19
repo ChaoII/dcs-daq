@@ -1,4 +1,6 @@
 {
+    "label_json": "label.json",
+    "tag_table": "label.csv",
     "scale_range": {
         "min": 0.3,
         "max": 4.0
@@ -23,9 +25,9 @@
     ],
     "border_grid_step": 150,
     "frame_size": {
-        "width": 640,
-        "height": 480
+        "width": 1588,
+        "height": 866
     },
-    "OPC_server_endpoint": "opc.tcp://127.0.0.1:49320",
-    "OPC_prefix": "ns=2;s=DCSDAQ.PC1."
+    "OPC_server_endpoint": "opc.tcp://172.168.1.112:4840",
+    "OPC_prefix": "ns=2;s="
 }
