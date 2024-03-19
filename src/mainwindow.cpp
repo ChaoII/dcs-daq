@@ -21,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) :
     status_scene_cord_->setMinimumWidth(150);
     ui->statusBar->addWidget(status_view_cord_);
     ui->statusBar->addWidget(status_scene_cord_);
-    ui->statusBar->addPermanentWidget(new QLabel("v1.24.3.2"));
+    ui->statusBar->addPermanentWidget(new QLabel(Config::version));
 
     auto action_group = new QActionGroup(this);
     action_group->addAction(ui->rectangleTool);
@@ -224,7 +224,6 @@ void MainWindow::on_importTool_triggered() {
     }
     clear_label();
     update_rect_from_json_array(json_array);
-
 }
 
 void MainWindow::on_fullscreenTool_triggered() {
@@ -237,13 +236,14 @@ void MainWindow::init_widget() {
     graphicsView_->add_image_item(
             QPixmap(QSize(Config::Instance().frame_size.width, Config::Instance().frame_size.height)));
     on_previewTool_triggered();
+    ui->previewTool->setChecked(true);
     QTimer::singleShot(1500, [&]() {
-        init_rect_from_outer_label(Config::Instance().label_json);
+        init_rect_from_label_json(Config::Instance().label_json);
         set_all_rect_enable(false);
         opc_->update_nodes_array(json_array_);
     });
     ocr_thread_.start();
-    get_scale_ratio();
+    setup_scale_ratio();
     show_full_screen();
 }
 
@@ -284,7 +284,7 @@ void MainWindow::set_all_rect_enable(bool status) {
     graphicsView_->setEnabled(status);
 }
 
-void MainWindow::init_rect_from_outer_label(const QString &file_name) {
+void MainWindow::init_rect_from_label_json(const QString &file_name) {
     auto json_array = Utils::read_json_array(file_name);
     update_rect_from_json_array(json_array);
 }
@@ -365,7 +365,7 @@ void MainWindow::show_normal() {
     is_normal_ = true;
 }
 
-void MainWindow::get_scale_ratio() {
+void MainWindow::setup_scale_ratio() {
     auto screen = QApplication::primaryScreen()->size();
     auto rate_w = (double) screen.width() / Config::Instance().frame_size.width;
     auto rate_h = (double) screen.height() / Config::Instance().frame_size.height;

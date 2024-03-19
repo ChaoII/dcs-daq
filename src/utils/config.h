@@ -47,6 +47,7 @@ public:
     QString OPC_prefix;
     QString label_json;
     QString tag_table;
+    inline static QString version = "v1.24.3.2";
 };
 
 
